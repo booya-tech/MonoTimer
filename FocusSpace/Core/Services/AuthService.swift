@@ -16,6 +16,7 @@ import AuthenticationServices
 final class AuthService: ObservableObject {
     @Published var currentUser: User? = nil
     @Published var isLoading = false
+    @Published var isInitialized = false
 
     private let supabase = SupabaseManager.shared.client
     private var appleSignInCoordinator: AppleSignInCoordinator?
@@ -42,6 +43,8 @@ final class AuthService: ObservableObject {
             Logger.log("No exisiting session found")
             currentUser = nil
         }
+
+        isInitialized = true
     }
 
     // Sign up with email and password

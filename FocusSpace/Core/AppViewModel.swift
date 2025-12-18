@@ -19,24 +19,17 @@ final class AppViewModel: NSObject,ObservableObject {
     override init() {
         super.init()
 
-        authService.$currentUser
-            .sink { [weak self] user in
-                self?.objectWillChange.send()
-
-                if user != nil {
-                    Task {
+        authService.$isInitialized
+            .filter { $0 == true }
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    if self?.authService.currentUser != nil {
                         await self?.requestNotificationPermissions()
-                        try? await Task.sleep(nanoseconds: 500_000_000)
-                        await MainActor.run {
-                            self?.isLoading = false
-                        }
                     }
-                } else {
-                    Task { @MainActor in
-                        // No user, loading complete
-                        try? await Task.sleep(nanoseconds: 500_000_000)
-                        self?.isLoading = false
-                    }
+                    // small delay for smooth transition
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                    // show appropriate view based on authentication state
+                    self?.isLoading = false
                 }
             }
             .store(in: &cancellables)
