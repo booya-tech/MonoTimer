@@ -25,6 +25,18 @@ struct ContentView: View {
             }
         }
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                NavigationLink(
+                    destination: SettingsView()
+                        .onDisappear {
+                            timerViewModel.objectWillChange.send()
+                        }
+                ) {
+                    Image(systemName: "drop.fill")
+                        .font(.title3)
+                        .foregroundColor(AppColors.primaryText)
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink(destination: SettingsView()
                     .onDisappear {
@@ -41,46 +53,43 @@ struct ContentView: View {
 
     // Extract content to a computed property
     private var contentView: some View {
-        VStack() {
+        VStack {
             Spacer()
+            
             // Session type indicator
             Text(timerViewModel.currentSessionType.displayName.uppercased())
                 .font(AppTypography.title3)
                 .foregroundColor(AppColors.primaryText)
             
             // Timer display
-            VStack(spacing: 10) {
-                CoffeeCupTimerView(
-                    progress: timerViewModel.progress,
-                    sessionType: timerViewModel.currentSessionType,
-                    formattedTime: timerViewModel.formattedTime,
-                    cupStyle: .glass
-                )
-                
-                
-                // Progress indicator
-                if !timerViewModel.isIdle {
-                    ProgressView(value: timerViewModel.progress)
-                        .progressViewStyle(LinearProgressViewStyle(tint: AppColors.accent))
-                        .frame(width: 200)
-                }
-                
-                Spacer()
-                // Preset selection (only when idle)
-                if timerViewModel.isIdle {
-                    PresetSelectionView(
-                        selectedDuration: timerViewModel.preferences.selectedFocusDuration
-                    )
-                }
-                
-                Spacer()
-                
-                // Timer controls
-                TimerControlsView(timerViewModel: timerViewModel)
-                
-                Spacer()
+            CircleTimerView(
+                progress: timerViewModel.progress,
+                sessionType: timerViewModel.currentSessionType,
+                formattedTime: timerViewModel.formattedTime
+            )
+            
+            // Progress indicator
+            if !timerViewModel.isIdle {
+                ProgressView(value: timerViewModel.progress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: AppColors.accent))
+                    .frame(width: 200)
             }
+            
+            Spacer()
+            
+            // Preset selection (only when idle)
+            if timerViewModel.isIdle {
+                PresetSelectionView(
+                    selectedDuration: timerViewModel.preferences.selectedFocusDuration
+                )
+            }
+            
+            // Timer controls
+            TimerControlsView(timerViewModel: timerViewModel)
+            
+            Spacer()
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
     }
 }
