@@ -52,9 +52,11 @@ struct TimerAppearance: View {
             Spacer()
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentShape(Rectangle())
+        .gesture(swipeGesture)
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
-        .gesture(swipeGesture)
     }
     
     // MARK: - Preview Section
@@ -66,7 +68,7 @@ struct TimerAppearance: View {
             
             ZStack {
                 Circle()
-                    .stroke(selectedColor.color, lineWidth: 2)
+                    .stroke(AppColors.primary, lineWidth: 2)
                     .frame(width: 180, height: 180)
                 
                 WavePreview(color: selectedColor.color, offset: waveOffset)
@@ -83,7 +85,7 @@ struct TimerAppearance: View {
                 .font(AppTypography.body)
                 .foregroundColor(AppColors.secondaryText)
             
-            Text("Swipe left or right to change")
+            Text("Swipe right to change")
                 .font(AppTypography.caption)
                 .foregroundColor(AppColors.secondaryText.opacity(0.6))
         }
@@ -182,6 +184,6 @@ private struct WavePreviewShape: Shape {
 
 #Preview {
     NavigationStack {
-        TimerAppearance()
+    TimerAppearance()
     }
 }

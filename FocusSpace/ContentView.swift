@@ -86,11 +86,10 @@ struct ContentView: View {
             
             // Timer controls
             TimerControlsView(timerViewModel: timerViewModel)
-            
-            Spacer()
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
+        .padding(.vertical, 16)
     }
 }
 

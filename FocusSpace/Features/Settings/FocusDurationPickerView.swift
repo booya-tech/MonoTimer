@@ -10,7 +10,7 @@ import SwiftUI
 struct FocusDurationPickerView: View {
     @Binding var selectedDuration: Int
     
-    let availableDurations = [25, 30, 35, 40, 45, 50, 60, 90, 120]
+    let availableDurations = [1, 30, 35, 40, 45, 50, 60, 90, 120]
     
     var body: some View {
         List {

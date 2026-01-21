@@ -11,10 +11,10 @@ import SwiftUI
 struct CircleWaveView: View {
     let progress: Double
     let offset: CGFloat
+    @ObservedObject private var preferences = AppPreferences.shared
     
     private var waveColor: Color {
-        let index = AppPreferences.shared.waveColorIndex
-        return WaveColor(rawValue: index)?.color ?? AppColors.primary
+        WaveColor(rawValue: preferences.waveColorIndex)?.color ?? AppColors.primary
     }
     
     var body: some View {
