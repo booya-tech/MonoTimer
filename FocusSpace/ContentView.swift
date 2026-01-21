@@ -27,7 +27,7 @@ struct ContentView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 NavigationLink(
-                    destination: SettingsView()
+                    destination: TimerAppearance()
                         .onDisappear {
                             timerViewModel.objectWillChange.send()
                         }

@@ -12,10 +12,15 @@ struct CircleWaveView: View {
     let progress: Double
     let offset: CGFloat
     
+    private var waveColor: Color {
+        let index = AppPreferences.shared.waveColorIndex
+        return WaveColor(rawValue: index)?.color ?? AppColors.primary
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             CircleWaveShape(offset: offset, progress: progress)
-                .fill(AppColors.primary)
+                .fill(waveColor)
         }
     }
 }

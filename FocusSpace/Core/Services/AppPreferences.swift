@@ -36,6 +36,11 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(dailyFocusGoal, forKey: "dailyFocusGoal")}
     }
 
+    // MARK: - Appearance
+    @Published var waveColorIndex: Int {
+        didSet { defaults.set(waveColorIndex, forKey: "waveColorIndex") }
+    }
+    
     // MARK: - Audio & Haptics
     // Enable completion sounds
     @Published var isSoundEnabled: Bool {
@@ -52,6 +57,7 @@ final class AppPreferences: ObservableObject {
         self.selectedBreakDuration = defaults.object(forKey: "selectedBreakDuration") as? Int ?? 5
         self.isStrictModeEnabled = defaults.bool(forKey: "isStrictModeEnabled")
         self.dailyFocusGoal = defaults.object(forKey: "dailyFocusGoal") as? Int ?? 120
+        self.waveColorIndex = defaults.object(forKey: "waveColorIndex") as? Int ?? 0
         self.isSoundEnabled = defaults.object(forKey: "isSoundEnabled") as? Bool ?? true
         self.isHapticsEnabled = defaults.object(forKey: "isHapticsEnabled") as? Bool ?? true
     }
@@ -62,6 +68,7 @@ final class AppPreferences: ObservableObject {
         selectedBreakDuration = 5
         isStrictModeEnabled = false
         dailyFocusGoal = 120
+        waveColorIndex = 0
         isSoundEnabled = true
         isHapticsEnabled = true
     }
