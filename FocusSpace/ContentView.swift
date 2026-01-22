@@ -74,18 +74,21 @@ struct ContentView: View {
                     .progressViewStyle(LinearProgressViewStyle(tint: AppColors.accent))
                     .frame(width: 200)
             }
-            
+
             Spacer()
-            
+
             // Preset selection (only when idle)
             if timerViewModel.isIdle {
                 PresetSelectionView(
                     selectedDuration: timerViewModel.preferences.selectedFocusDuration
                 )
             }
-            
+
+            Spacer().frame(height: 16)
+
             // Timer controls
             TimerControlsView(timerViewModel: timerViewModel)
+            
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)

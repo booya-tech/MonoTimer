@@ -7,32 +7,6 @@
 
 import SwiftUI
 
-/// Wave color options for the timer
-enum WaveColor: Int, CaseIterable {
-    case defaultColor = 0
-    case blue = 1
-    case green = 2
-    case purple = 3
-    
-    var color: Color {
-        switch self {
-        case .defaultColor: return AppColors.primary
-        case .blue: return .blue
-        case .green: return .green
-        case .purple: return .purple
-        }
-    }
-    
-    var name: String {
-        switch self {
-        case .defaultColor: return "Default"
-        case .blue: return "Blue"
-        case .green: return "Green"
-        case .purple: return "Purple"
-        }
-    }
-}
-
 struct TimerAppearance: View {
     @ObservedObject private var preferences = AppPreferences.shared
     @State private var waveOffset: CGFloat = 0
@@ -87,7 +61,7 @@ struct TimerAppearance: View {
             
             Text("Swipe right to change")
                 .font(AppTypography.caption)
-                .foregroundColor(AppColors.secondaryText.opacity(0.6))
+                .foregroundColor(AppColors.secondaryText.opacity(0.5))
         }
     }
     
@@ -103,6 +77,7 @@ struct TimerAppearance: View {
                 } label: {
                     Circle()
                         .fill(waveColor.color)
+                        .opacity(0.5)
                         .frame(width: 44, height: 44)
                         .overlay(
                             Circle()
@@ -145,6 +120,7 @@ private struct WavePreview: View {
         GeometryReader { geometry in
             WavePreviewShape(offset: offset)
                 .fill(color)
+                .opacity(0.5)
         }
     }
 }

@@ -21,6 +21,7 @@ struct CircleWaveView: View {
         GeometryReader { geometry in
             CircleWaveShape(offset: offset, progress: progress)
                 .fill(waveColor)
+                .opacity(0.5)
         }
     }
 }

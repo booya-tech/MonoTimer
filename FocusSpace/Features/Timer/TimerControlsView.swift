@@ -31,7 +31,7 @@ struct TimerControlsView: View {
                             .foregroundColor(AppColors.secondaryText)
                     }
                 }
-                if timerViewModel.currentSessionType == .focus{
+                if timerViewModel.currentSessionType == .focus {
                     if timerViewModel.preferences.isStrictModeEnabled {
                         PrimaryButton(title: "Stop Session", isDestructive: true) {
                             timerViewModel.stop()
