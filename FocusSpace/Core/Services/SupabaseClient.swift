@@ -17,10 +17,13 @@ class SupabaseManager {
 
     private init() {
         guard let supabaseURLString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String, !supabaseURLString.isEmpty, let supabaseURL = URL(string: supabaseURLString) else {
+            print("❌ CRASH: SUPABASE_URL is missing from Info.plist")
+            print("📋 Available keys: \(Bundle.main.infoDictionary?.keys.sorted() ?? [])")
             fatalError("Invalid or missing SUPABASE_URL configuration")
         }
 
         guard let supabaseKey = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String, !supabaseKey.isEmpty else {
+            print("❌ CRASH: SUPABASE_ANON_KEY is missing from Info.plist")
             fatalError("Invalid or missing SUPABASE_ANON_KEY configuration")
         }
 
