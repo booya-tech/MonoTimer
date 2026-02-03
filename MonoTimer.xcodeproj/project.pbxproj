@@ -77,13 +77,6 @@
 			);
 			target = C0BDD4F62E76CFA500E69A6B /* MonoTimerWidgetsExtension */;
 		};
-		C092D5DD2F31CE0300BA6252 /* Exceptions for "FocusSpaceWidgets" folder in "MonoTimer" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				AppIntent.swift,
-			);
-			target = C0CAEB452E58B8020035D5D1 /* MonoTimer */;
-		};
 		C0BDD49F2E76CDC600E69A6B /* Exceptions for "FocusSpace" folder in "MonoTimer" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -110,7 +103,6 @@
 		C0BDD4FD2E76CFA500E69A6B /* FocusSpaceWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				C092D5DD2F31CE0300BA6252 /* Exceptions for "FocusSpaceWidgets" folder in "MonoTimer" target */,
 				C092D5DB2F31B39800BA6252 /* Exceptions for "FocusSpaceWidgets" folder in "MonoTimerWidgetsExtension" target */,
 			);
 			path = FocusSpaceWidgets;
