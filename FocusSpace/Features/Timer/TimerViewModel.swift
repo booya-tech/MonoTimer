@@ -11,6 +11,7 @@ import ActivityKit
 import Foundation
 import SwiftUI
 import UIKit
+import WidgetKit
 
 /// Timer state for the state machine
 enum TimerState {
@@ -80,6 +81,8 @@ final class TimerViewModel: ObservableObject {
             let sessions = try await sessionSync.getSessions()
             await MainActor.run {
                 self.completedSessions = sessions
+                // Update widget data after loading sessions
+                updateWidgetData()
             }
         } catch {
             Logger.log("Failed to load sessions: \(error)")
@@ -356,5 +359,15 @@ final class TimerViewModel: ObservableObject {
         case .success: HapticManager.shared.success()
         case .warning: HapticManager.shared.warning()
         }
+    }
+    
+    // MARK: - Widget Data
+    
+    /// Updates widget data with current sessions and daily goal
+    private func updateWidgetData() {
+        WidgetDataProvider.shared.updateWidgetData(
+            sessions: completedSessions,
+            dailyGoal: preferences.dailyFocusGoal
+        )
     }
 }
