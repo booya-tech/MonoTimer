@@ -57,8 +57,18 @@
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
       launchAutomaticallySubstyle = "2">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.springboard">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "C0BDD4F62E76CFA500E69A6B"
+            BuildableName = "MonoTimerWidgetsExtension.appex"
+            BlueprintName = "MonoTimerWidgetsExtension"
+            ReferencedContainer = "container:MonoTimer.xcodeproj">
+         </BuildableReference>
+      </RemoteRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C0CAEB452E58B8020035D5D1"
@@ -66,7 +76,7 @@
             BlueprintName = "MonoTimer"
             ReferencedContainer = "container:MonoTimer.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "_XCWidgetKind"
