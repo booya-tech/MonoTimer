@@ -16,28 +16,45 @@ struct AuthView: View {
     }
 
     var body: some View {
-        VStack(spacing: 32) {
-            // Header
-            appHeader
+        ZStack {
+            AppColors.background
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    hideKeyboard()
+                }
 
-            // Email & Password Fields
-            emailAndPasswordFields
-            
-            // Apple Sign-in and Normal Sign-in Buttons
-            VStack(spacing: 12) {
-                customDivider
+            VStack(spacing: 32) {
+                // Header
+                appHeader
 
-                confirmButtons
+                // Email & Password Fields
+                emailAndPasswordFields
+
+                // Apple Sign-in and Normal Sign-in Buttons
+                VStack(spacing: 12) {
+                    customDivider
+
+                    SignInWithAppleButton(
+                        .signIn,
+                        onRequest: { request in
+                            request.requestedScopes = [.fullName, .email]
+                        }, onCompletion: { result in
+                            Task {
+                                await viewModel.handleAppleSignIn(result)
+                            }
+                        }
+                    )
+                    .frame(height: 50)
+                    .cornerRadius(8)
+
+                    primaryButton
+                }
+
+                Spacer()
             }
-
-            Spacer()
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppColors.background)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            hideKeyboard()
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
     
@@ -99,20 +116,7 @@ struct AuthView: View {
     }
     
     @ViewBuilder
-    private var confirmButtons: some View {
-        SignInWithAppleButton(
-            .signIn,
-            onRequest: { request in
-                request.requestedScopes = [.fullName, .email]
-            }, onCompletion: { result in
-                Task {
-                    await viewModel.handleAppleSignIn(result)
-                }
-            }
-        )
-        .frame(height: 50)
-        .cornerRadius(8)
-        
+    private var primaryButton: some View {
         // Main action button
         PrimaryButton(
             title: viewModel.isLoading ? "Loading..." : (viewModel.isSignUpMode ? "Sign Up" : "Sign In")
