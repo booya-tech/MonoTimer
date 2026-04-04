@@ -18,7 +18,7 @@ final class AuthService: ObservableObject {
     @Published var isLoading = false
     @Published var isInitialized = false
 
-    private let supabase = SupabaseManager.shared.client
+    private var supabase: SupabaseClient? { SupabaseManager.shared.client }
     private var appleSignInCoordinator: AppleSignInCoordinator?
     // Check if user signed in with Apple
     var isAppleUser: Bool {
@@ -36,6 +36,12 @@ final class AuthService: ObservableObject {
 
     // Check if user has an existing session
     private func checkCurrentSession() async {
+        guard let supabase else {
+            Logger.log("Supabase not configured - skipping session check")
+            isInitialized = true
+            return
+        }
+        
         do {
             let session = try await supabase.auth.session
             currentUser = session.user
@@ -49,6 +55,8 @@ final class AuthService: ObservableObject {
 
     // Sign up with email and password
     func signUp(email: String, password: String) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+        
         isLoading = true
         defer { isLoading = false }
 
@@ -62,6 +70,8 @@ final class AuthService: ObservableObject {
 
     // Sign in with email and password
     func signIn(email: String, password: String) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+        
         isLoading = true
         defer { isLoading = false }
 
@@ -75,9 +85,10 @@ final class AuthService: ObservableObject {
 
     // Sign in with Apple
     func signInWithApple(_ idToken: String) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+        
         isLoading = true
         defer { isLoading = false }
-
 
         // Send token to Supabase
         let response = try await supabase.auth.signInWithIdToken(
@@ -92,6 +103,8 @@ final class AuthService: ObservableObject {
 
     // Sign out current user
     func signOut() async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+        
         isLoading = true
         defer { isLoading = false }
 
@@ -101,6 +114,7 @@ final class AuthService: ObservableObject {
 
     // Verify password before sensitive operations
     func verifyPassword(password: String) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
         guard let email = currentUser?.email else {
             throw AuthError.notAuthenticated
         }
@@ -119,6 +133,8 @@ final class AuthService: ObservableObject {
 
     // Delete user account and all associated data
     func deleteAccount() async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+        
         isLoading = true
         defer { isLoading = false }
 

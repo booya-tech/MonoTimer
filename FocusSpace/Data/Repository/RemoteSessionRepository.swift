@@ -12,9 +12,11 @@ import Supabase
 
 /// Supabase remote session storage
 final class RemoteSessionRepository: SessionRepository {
-    private let supabase = SupabaseManager.shared.client
+    private var supabase: SupabaseClient? { SupabaseManager.shared.client }
 
     func getSessions(from startDate: Date?, to endDate: Date?) async throws -> [Session] {
+        guard let supabase else { throw RepositoryError.serviceUnavailable }
+        
         let response: [SessionDTO] =
             try await supabase
             .from("sessions")
@@ -37,8 +39,9 @@ final class RemoteSessionRepository: SessionRepository {
     }
 
     func save(_ session: Session) async throws {
-        let userId = try await SupabaseManager.shared.client.auth.session.user.id.uuidString
+        guard let supabase else { throw RepositoryError.serviceUnavailable }
         
+        let userId = try await supabase.auth.session.user.id.uuidString
         let dto = SessionDTO(from: session, userId: userId)
 
         try await supabase
@@ -48,10 +51,23 @@ final class RemoteSessionRepository: SessionRepository {
     }
 
     func delete(id: UUID) async throws {
+        guard let supabase else { throw RepositoryError.serviceUnavailable }
+        
         try await supabase
             .from("sessions")
             .delete()
             .eq("id", value: id.uuidString)
             .execute()
+    }
+}
+
+// MARK: - Repository Error
+enum RepositoryError: LocalizedError {
+    case serviceUnavailable
+    
+    var errorDescription: String? {
+        switch self {
+        case .serviceUnavailable: return "Remote storage service is unavailable"
+        }
     }
 }
