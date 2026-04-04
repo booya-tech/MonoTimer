@@ -33,6 +33,12 @@ final class AppViewModel: NSObject,ObservableObject {
                 }
             }
             .store(in: &cancellables)
+        
+        authService.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
 
     var isAuthenticated: Bool {
