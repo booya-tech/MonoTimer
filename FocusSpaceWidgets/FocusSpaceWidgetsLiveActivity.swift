@@ -41,18 +41,6 @@ struct FocusSpaceWidgetsLiveActivity: Widget {
                         .fontWeight(.semibold)
                         .monospacedDigit()
                 }
-                /// Description
-                /// might add back progress bar
-                //                DynamicIslandExpandedRegion(.bottom) {
-                //                    HStack {
-                ////                        ProgressView(value: context.state.progress)
-                ////                            .progressViewStyle(LinearProgressViewStyle(tint: context.state.sessionType.color))
-                //                        Image(systemName: context.state.isRunning ? "pause.fill" : "play.fill")
-                //                            .font(.caption)
-                //                            .foregroundColor(.secondary)
-                //                    }
-                //                    .padding(.horizontal, 12)
-                //                }
             } compactLeading: {
                 // Compact leading (left side of notch) - main timer display
                 Circle()
@@ -70,12 +58,6 @@ struct FocusSpaceWidgetsLiveActivity: Widget {
                     .fill(context.state.sessionType.color)
                     .frame(width: 16, height: 16)
             }
-            /// Description
-            /// custom properties on dynamic island
-            //            .contentMargins(.trailing, 32, for: .expanded)
-            //            .contentMargins([.leading, .top, .bottom], 6, for: .compactLeading)
-            //            .contentMargins(.all, 6, for: .minimal)
-            //            .widgetURL(URL(string: "foodtruck://order/\(context.attributes.orderID)"))
         }
     }
 }
