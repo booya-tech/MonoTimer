@@ -150,10 +150,6 @@ final class TimerViewModel: ObservableObject {
                 isRunning: true
             )
         }
-        
-        // Task {
-        //     await notificationManager.debugAuthorizationStatus()
-        // }
 
         Task {
             await notificationManager.scheduleTimerCompletion(
@@ -162,15 +158,6 @@ final class TimerViewModel: ObservableObject {
                 presetName: "\(durationMinutes)"
             )
         }
-
-        // Task {
-        //     await notificationManager.debugPendingNotifications()
-        // }
-        
-        Logger.log("🔍 Timer Debug:")
-        Logger.log("Session Type: \(sessionType.displayName)")
-        Logger.log("Total Seconds: \(totalSeconds)")
-        Logger.log("Preset Name: \(durationMinutes) min")
     }
 
     // Pause the current timer
