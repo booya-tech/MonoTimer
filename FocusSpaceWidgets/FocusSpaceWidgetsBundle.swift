@@ -12,7 +12,6 @@ import SwiftUI
 struct FocusSpaceWidgetsBundle: WidgetBundle {
     var body: some Widget {
         FocusSpaceWidgets()
-//        FocusSpaceWidgetsControl()
-//        FocusSpaceWidgetsLiveActivity()
+        FocusSpaceWidgetsLiveActivity()
     }
 }
