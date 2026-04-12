@@ -92,10 +92,76 @@ final class NotificationManager: ObservableObject {
         }
     }
 
+    // MARK: - Daily Reminders
+    func scheduleDailyReminders() async {
+        guard isAuthorized else {
+            Logger.log("⚠️ Notifications not authorized, skipping daily reminders")
+            return
+        }
+
+        for reminder in DailyReminder.allCases {
+            let content = UNMutableNotificationContent()
+            content.title = reminder.title
+            content.body = reminder.body
+            content.sound = .default
+
+            var dateComponents = DateComponents()
+            dateComponents.hour = reminder.hour
+            dateComponents.minute = 0
+
+            let trigger = UNCalendarNotificationTrigger(
+                dateMatching: dateComponents,
+                repeats: true
+            )
+
+            let request = UNNotificationRequest(
+                identifier: reminder.rawValue,
+                content: content,
+                trigger: trigger
+            )
+
+            do {
+                try await notificationCenter.add(request)
+                Logger.log("📅 Scheduled daily reminder: \(reminder.rawValue) at \(reminder.hour):00")
+            } catch {
+                Logger.log("❌ Failed to schedule daily reminder \(reminder.rawValue): \(error)")
+            }
+        }
+
+        
+        let testContent = UNMutableNotificationContent()
+        testContent.title = "Test Daily Reminder"
+        testContent.body = "This should appear in ~60 seconds."
+        testContent.sound = .default
+
+        //        await scheduleTestNotification()
+    }
+
+    private func scheduleTestNotification() async {
+        let testContent = UNMutableNotificationContent()
+        testContent.title = "Test Daily Reminder 🔥"
+        testContent.body = "This should appear in ~60 seconds. 💎 🌊"
+        testContent.sound = .default
+
+        let testTrigger = UNTimeIntervalNotificationTrigger(timeInterval: 60, repeats: false)
+        let testRequest = UNNotificationRequest(
+            identifier: "daily_test",
+            content: testContent,
+            trigger: testTrigger
+        )
+        try? await notificationCenter.add(testRequest)
+        Logger.log("🧪 Test notification scheduled for 60s from now")
+    }
+
     /// Cancel all pending timer notifications
-    func cancelAllTimerNotifications() {
-        notificationCenter.removeAllPendingNotificationRequests()
-        Logger.log("🗑️ Cancelled all pending notifications")
+    func cancelAllTimerNotifications() async {
+        let requests = await notificationCenter.pendingNotificationRequests()
+        let timerIDs = requests
+            .filter { $0.identifier.hasPrefix("timer_") }
+            .map { $0.identifier }
+
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: timerIDs)
+        Logger.log("🗑️ Cancelled \(timerIDs.count) timer notifications")
     }
 
     /// Cancel specific timer notification
@@ -127,26 +193,5 @@ final class NotificationManager: ObservableObject {
         Logger.log("Sound Setting: \(settings.soundSetting.rawValue)")
         Logger.log("Badge Setting: \(settings.badgeSetting.rawValue)")
         Logger.log("isAuthorized: \(isAuthorized)")
-    }
-}
-
-extension SessionType {
-    var notificationTitle: String {
-        switch self {
-            case .focus: return "Focus Session Completed!"
-            case .shortBreak: return "Break Time Over!"
-            case .longBreak: return "Break Time Over!"
-        }
-    }
-
-    func notificationBody(presetName: String) -> String {
-        switch self {
-        case .focus:
-            return "Great work! Your \(presetName)-minute focus session is done. Open the app to start your break."
-        case .shortBreak:
-            return "Ready to get back to work? Your break is over."
-        case .longBreak:
-            return "Refreshed and ready! Time to start your next focus session."
-        }
     }
 }
