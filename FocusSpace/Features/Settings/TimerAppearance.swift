@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TimerAppearance: View {
-    @ObservedObject private var preferences = AppPreferences.shared
+    @EnvironmentObject private var preferences: AppPreferences
     @State private var waveOffset: CGFloat = 0
     
     private var selectedColor: WaveColor {
@@ -36,7 +36,7 @@ struct TimerAppearance: View {
     // MARK: - Preview Section
     private var previewSection: some View {
         VStack(spacing: 16) {
-            Text("Wave Color")
+            Text("WAVE COLOR")
                 .font(AppTypography.title3)
                 .foregroundColor(AppColors.primaryText)
             
@@ -45,7 +45,7 @@ struct TimerAppearance: View {
                     .stroke(AppColors.primary, lineWidth: 2)
                     .frame(width: 180, height: 180)
                 
-                WavePreview(color: selectedColor.color, offset: waveOffset)
+                WavePreview(waveColor: selectedColor, offset: waveOffset)
                     .frame(width: 180, height: 180)
                     .clipShape(Circle())
                     .onAppear {
@@ -55,11 +55,24 @@ struct TimerAppearance: View {
                     }
             }
             
-            Text(selectedColor.name)
-                .font(AppTypography.body)
-                .foregroundColor(AppColors.secondaryText)
+            HStack(spacing: 8) {
+                Text(selectedColor.name)
+                    .font(AppTypography.body)
+                    .foregroundColor(AppColors.secondaryText)
+                
+                if selectedColor.isPremium {
+                    Text("PRO")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppColors.primaryRevert)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(AppColors.primary)
+                        .cornerRadius(4)
+                }
+            }
             
-            Text("Swipe right to change")
+            Text("Swipe to change")
                 .font(AppTypography.caption)
                 .foregroundColor(AppColors.secondaryText.opacity(0.5))
         }
@@ -67,24 +80,108 @@ struct TimerAppearance: View {
     
     // MARK: - Color Buttons
     private var colorButtons: some View {
-        HStack(spacing: 20) {
-            ForEach(WaveColor.allCases, id: \.rawValue) { waveColor in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        preferences.waveColorIndex = waveColor.rawValue
+        VStack(spacing: 16) {
+            if preferences.isPremiumUser {
+                // Free colors
+                HStack(spacing: 16) {
+                    ForEach(WaveColor.freeColors, id: \.rawValue) { waveColor in
+                        colorButtonPremium(for: waveColor)
                     }
-                    HapticManager.shared.light()
-                } label: {
+                }
+                
+                // Premium colors
+                HStack(spacing: 16) {
+                    ForEach(WaveColor.premiumColors, id: \.rawValue) { waveColor in
+                        colorButtonPremium(for: waveColor)
+                    }
+                }
+            } else {
+                // Free colors
+                HStack(spacing: 16) {
+                    ForEach(WaveColor.freeColors, id: \.rawValue) { waveColor in
+                        colorButtonNotPremium(for: waveColor)
+                    }
+                }
+                
+                // Premium colors
+                HStack(spacing: 16) {
+                    ForEach(WaveColor.premiumColors, id: \.rawValue) { waveColor in
+                        colorButtonNotPremium(for: waveColor)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func colorButtonNotPremium(for waveColor: WaveColor) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                preferences.waveColorIndex = waveColor.rawValue
+            }
+            HapticManager.shared.light()
+        } label: {
+            ZStack {
+                if waveColor.isPremium {
+                    Group {
+                        // Premium: gradient fill + glow
+                        Circle()
+                            .fill(waveColor.gradient)
+                            .frame(width: 44, height: 44)
+                            .shadow(color: waveColor.glowColor.opacity(0.5), radius: 6)
+                        
+                        
+                        ZStack(alignment: .center) {
+                            Circle()
+                                .fill(Color.black.opacity(0.5))
+                                .frame(width: 44, height: 44)
+                            
+                            Image(systemName: "lock.fill")
+                                .font(.body)
+                                .foregroundStyle(AppColors.primary)
+                        }
+                    }
+                } else {
+                    // Free: solid color
                     Circle()
                         .fill(waveColor.color)
                         .opacity(0.5)
                         .frame(width: 44, height: 44)
-                        .overlay(
-                            Circle()
-                                .stroke(AppColors.primaryText, lineWidth: selectedColor == waveColor ? 3 : 0)
-                        )
                 }
             }
+            .overlay(
+                Circle()
+                    .stroke(AppColors.primaryText, lineWidth: selectedColor == waveColor ? 3 : 0)
+            )
+        }
+        .disabled(waveColor.isPremium)
+    }
+    
+    private func colorButtonPremium(for waveColor: WaveColor) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                preferences.waveColorIndex = waveColor.rawValue
+            }
+            HapticManager.shared.light()
+        } label: {
+            ZStack {
+                if waveColor.isPremium {
+                    // Premium: gradient fill + glow
+                    Circle()
+                        .fill(waveColor.gradient)
+                        .frame(width: 44, height: 44)
+                        .shadow(color: waveColor.glowColor.opacity(0.5), radius: 6)
+                } else {
+                    // Free: solid color
+                    Circle()
+                        .fill(waveColor.color)
+                        .opacity(0.5)
+                        .frame(width: 44, height: 44)
+                }
+            }
+            .overlay(
+                Circle()
+                    .stroke(AppColors.primaryText, lineWidth: selectedColor == waveColor ? 3 : 0)
+            )
         }
     }
     
@@ -92,19 +189,20 @@ struct TimerAppearance: View {
     private var swipeGesture: some Gesture {
         DragGesture(minimumDistance: 50)
             .onEnded { value in
-                let colors = WaveColor.allCases
-                var newIndex = preferences.waveColorIndex
+                let colors = preferences.isPremiumUser ? WaveColor.allCases : WaveColor.freeColors
+                guard let currentIndex = colors.firstIndex(where: { $0.rawValue == preferences.waveColorIndex }) else { return }
+                var newIndex: Int
                 
                 if value.translation.width < 0 {
                     // Swipe left - next color
-                    newIndex = (newIndex + 1) % colors.count
+                    newIndex = (currentIndex + 1) % colors.count
                 } else {
                     // Swipe right - previous color
-                    newIndex = (newIndex - 1 + colors.count) % colors.count
+                    newIndex = (currentIndex - 1 + colors.count) % colors.count
                 }
                 
                 withAnimation(.easeInOut(duration: 0.3)) {
-                    preferences.waveColorIndex = newIndex
+                    preferences.waveColorIndex = colors[newIndex].rawValue
                 }
                 HapticManager.shared.light()
             }
@@ -113,14 +211,23 @@ struct TimerAppearance: View {
 
 // MARK: - Wave Preview
 private struct WavePreview: View {
-    let color: Color
+    let waveColor: WaveColor
     let offset: CGFloat
+    
+    private var fillStyle: AnyShapeStyle {
+        waveColor.isPremium
+            ? AnyShapeStyle(waveColor.gradient)
+            : AnyShapeStyle(waveColor.color.opacity(0.5))
+    }
     
     var body: some View {
         GeometryReader { geometry in
             WavePreviewShape(offset: offset)
-                .fill(color)
-                .opacity(0.5)
+                .fill(fillStyle)
+                .shadow(
+                    color: waveColor.isPremium ? waveColor.glowColor.opacity(0.5) : .clear,
+                    radius: waveColor.isPremium ? 12 : 0
+                )
         }
     }
 }
@@ -158,8 +265,21 @@ private struct WavePreviewShape: Shape {
     }
 }
 
-#Preview {
-    NavigationStack {
-    TimerAppearance()
+#Preview("Free User") {
+    let prefs = AppPreferences.shared
+    prefs.isPremiumUser = false
+    prefs.waveColorIndex = 0
+    return NavigationStack {
+        TimerAppearance()
+            .environmentObject(prefs)
+    }
+}
+
+#Preview("Premium User") {
+    let prefs = AppPreferences.shared
+    prefs.isPremiumUser = true
+    return NavigationStack {
+        TimerAppearance()
+            .environmentObject(prefs)
     }
 }

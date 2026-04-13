@@ -11,17 +11,26 @@ import SwiftUI
 struct CircleWaveView: View {
     let progress: Double
     let offset: CGFloat
-    @ObservedObject private var preferences = AppPreferences.shared
+    @EnvironmentObject private var preferences: AppPreferences
     
-    private var waveColor: Color {
-        WaveColor(rawValue: preferences.waveColorIndex)?.color ?? AppColors.primary
+    private var waveColorEnum: WaveColor {
+        WaveColor(rawValue: preferences.waveColorIndex) ?? .defaultColor
+    }
+    
+    private var fillStyle: AnyShapeStyle {
+        waveColorEnum.isPremium
+            ? AnyShapeStyle(waveColorEnum.gradient)
+            : AnyShapeStyle(waveColorEnum.color.opacity(0.5))
     }
     
     var body: some View {
         GeometryReader { geometry in
             CircleWaveShape(offset: offset, progress: progress)
-                .fill(waveColor)
-                .opacity(0.5)
+                .fill(fillStyle)
+                .shadow(
+                    color: waveColorEnum.isPremium ? waveColorEnum.glowColor.opacity(0.5) : .clear,
+                    radius: waveColorEnum.isPremium ? 12 : 0
+                )
         }
     }
 }
@@ -69,4 +78,5 @@ private struct CircleWaveShape: Shape {
         progress: 0.5,
         offset: 0.5
     )
+    .environmentObject(AppPreferences.shared)
 }

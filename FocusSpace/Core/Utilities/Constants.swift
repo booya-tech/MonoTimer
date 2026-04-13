@@ -40,4 +40,8 @@ enum AppConstants {
         static let mediumPadding: CGFloat = 16
         static let smallPadding: CGFloat = 8
     }
+    
+    enum Premium {
+        static let minPremiumValue: Int = 4
+    }
 }

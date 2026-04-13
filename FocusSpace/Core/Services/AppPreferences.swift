@@ -17,7 +17,6 @@ final class AppPreferences: ObservableObject {
     private let defaults = UserDefaults.standard
 
     // MARK: - Timer Settings
-    // Custom focus durations (in minutes)
     // Custom focus duration (in minutes)
     @Published var selectedFocusDuration: Int {
         didSet { defaults.set(selectedFocusDuration, forKey: "selectedFocusDuration") }
@@ -51,6 +50,16 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(isHapticsEnabled, forKey: "isHapticsEnabled") }
     }
 
+    // MARK: - Subscription Status
+    @Published var isPremiumUser: Bool {
+        didSet { 
+            defaults.set(isPremiumUser, forKey: "isPremiumUser") 
+            if !isPremiumUser && waveColorIndex >= AppConstants.Premium.minPremiumValue {
+                waveColorIndex = 0
+            }
+        }
+    }
+
     // MARK: - Initialization
     private init() {
         self.selectedFocusDuration = defaults.object(forKey: "selectedFocusDuration") as? Int ?? 25
@@ -60,6 +69,7 @@ final class AppPreferences: ObservableObject {
         self.waveColorIndex = defaults.object(forKey: "waveColorIndex") as? Int ?? 0
         self.isSoundEnabled = defaults.object(forKey: "isSoundEnabled") as? Bool ?? true
         self.isHapticsEnabled = defaults.object(forKey: "isHapticsEnabled") as? Bool ?? true
+        self.isPremiumUser = defaults.bool(forKey: "isPremiumUser")
     }
 
     // Reset all preferences to defaults
@@ -71,6 +81,7 @@ final class AppPreferences: ObservableObject {
         waveColorIndex = 0
         isSoundEnabled = true
         isHapticsEnabled = true
+        isPremiumUser = false
     }
 }
 

@@ -10,6 +10,7 @@ import SwiftUI
 /// Minimal circle start button with 3-second countdown animation
 struct CircleStartButton: View {
     let action: () -> Void
+    let isHapticsEnabled: Bool
     
     @State private var countdown: Int = 3
     @State private var isCountingDown = false
@@ -77,7 +78,7 @@ struct CircleStartButton: View {
                 progress = Double(countdown) / 3.0
                 
                 // Haptic feedback
-                if AppPreferences.shared.isHapticsEnabled {
+                if isHapticsEnabled {
                     let impact = UIImpactFeedbackGenerator(style: .light)
                     impact.impactOccurred()
                 }
@@ -109,9 +110,9 @@ struct CircleStartButton: View {
             .font(.caption)
             .foregroundColor(.gray)
         
-        CircleStartButton {
+        CircleStartButton(action: {
             Logger.log("Timer started!")
-        }
+        }, isHapticsEnabled: true)
     }
     .padding()
 }

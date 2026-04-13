@@ -12,6 +12,7 @@ import SwiftUI
 /// Root view that handles navigation between authenticated and unauthenticated states
 struct RootView: View {
     @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject private var preferences: AppPreferences
 
     var body: some View {
         Group {
@@ -28,10 +29,14 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: appViewModel.isLoading)
         .animation(.easeInOut(duration: 0.3), value: appViewModel.authService.currentUser != nil)
+        .onAppear {
+            preferences.isPremiumUser = false
+        }
     }
 }
 
 #Preview {
     RootView()
         .environmentObject(AppViewModel())
+        .environmentObject(AppPreferences.shared)
 }
