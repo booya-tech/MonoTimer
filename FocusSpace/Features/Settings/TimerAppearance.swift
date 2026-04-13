@@ -57,7 +57,7 @@ struct TimerAppearance: View {
                     .clipShape(Circle())
                     .onAppear {
                         withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
-                            waveOffset = 180
+                            waveOffset = AppConstants.UI.circleSize
                         }
                     }
             }
