@@ -13,6 +13,12 @@ enum AppConstants {
     //MARK: - App Name
     static let appName = "MonoTimer"
     
+    //MARK: - Icons
+    public enum Icon {
+        static let chevronLeft = "chevron.left"
+        static let chevronRight = "chevron.right"
+    }
+    
     // MARK: - URLs
     enum URLs {
         static let github = "https://github.com/booya-tech/MonoTimer"

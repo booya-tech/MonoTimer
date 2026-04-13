@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AppString {
+enum AppString {
     // Navigation Title
     static let profileViewTitle = "Profile"
     
@@ -31,4 +31,7 @@ struct AppString {
     // Delete Account View
     static let deleteAccount = "Delete Account"
     static let deleteAccountViewDialogTitle = "Deleting your account will permanently remove all your data, including focus sessions, statistics, and personal information. This action cannot be undone."
+    
+    // Habit Streaks Board View
+    static let habitStreaksTitle = "Habit Streaks"
 }
