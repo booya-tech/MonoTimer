@@ -89,9 +89,16 @@ struct TimerAppearance: View {
                     }
                 }
                 
-                // Premium colors
+                // Premium colors — row 1
                 HStack(spacing: 16) {
-                    ForEach(WaveColor.premiumColors, id: \.rawValue) { waveColor in
+                    ForEach(WaveColor.premiumColorsRow1, id: \.rawValue) { waveColor in
+                        colorButtonPremium(for: waveColor)
+                    }
+                }
+                
+                // Premium colors — row 2
+                HStack(spacing: 16) {
+                    ForEach(WaveColor.premiumColorsRow2, id: \.rawValue) { waveColor in
                         colorButtonPremium(for: waveColor)
                     }
                 }
@@ -103,9 +110,16 @@ struct TimerAppearance: View {
                     }
                 }
                 
-                // Premium colors
+                // Premium colors — row 1
                 HStack(spacing: 16) {
-                    ForEach(WaveColor.premiumColors, id: \.rawValue) { waveColor in
+                    ForEach(WaveColor.premiumColorsRow1, id: \.rawValue) { waveColor in
+                        colorButtonNotPremium(for: waveColor)
+                    }
+                }
+                
+                // Premium colors — row 2
+                HStack(spacing: 16) {
+                    ForEach(WaveColor.premiumColorsRow2, id: \.rawValue) { waveColor in
                         colorButtonNotPremium(for: waveColor)
                     }
                 }
