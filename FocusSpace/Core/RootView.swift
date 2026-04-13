@@ -30,7 +30,7 @@ struct RootView: View {
         .animation(.easeInOut(duration: 0.3), value: appViewModel.isLoading)
         .animation(.easeInOut(duration: 0.3), value: appViewModel.authService.currentUser != nil)
         .onAppear {
-            preferences.isPremiumUser = false
+            preferences.isPremiumUser = true
         }
     }
 }

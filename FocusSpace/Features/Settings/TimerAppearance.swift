@@ -43,10 +43,17 @@ struct TimerAppearance: View {
             ZStack {
                 Circle()
                     .stroke(AppColors.primary, lineWidth: 2)
-                    .frame(width: 180, height: 180)
+                    .frame(
+                        width:
+                            AppConstants.UI.circleFrameSize,
+                        height: AppConstants.UI.circleFrameSize
+                    )
                 
                 WavePreview(waveColor: selectedColor, offset: waveOffset)
-                    .frame(width: 180, height: 180)
+                    .frame(
+                        width: AppConstants.UI.circleSize,
+                        height: AppConstants.UI.circleSize
+                    )
                     .clipShape(Circle())
                     .onAppear {
                         withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
