@@ -168,7 +168,6 @@ final class TimerViewModel: ObservableObject {
         stopTimer()
         triggerHaptic(.light)
 
-        // Update Live Activity to show paused state
         Task {
             await activityManager.updateLiveActivity(
                 sessionType: currentSessionType,
@@ -176,9 +175,8 @@ final class TimerViewModel: ObservableObject {
                 remainingSeconds: remainingSeconds,
                 isRunning: false
             )
+            await notificationManager.cancelAllTimerNotifications()
         }
-
-        notificationManager.cancelAllTimerNotifications()
     }
 
     // Resume the paused timer
@@ -223,12 +221,10 @@ final class TimerViewModel: ObservableObject {
 
         triggerHaptic(.warning)
 
-        // End Live Activity
         Task {
             await activityManager.endLiveActivity()
+            await notificationManager.cancelAllTimerNotifications()
         }
-
-        notificationManager.cancelAllTimerNotifications()
     }
 
     // Skip to break (when in focus session)

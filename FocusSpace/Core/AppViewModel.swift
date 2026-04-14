@@ -25,6 +25,7 @@ final class AppViewModel: NSObject,ObservableObject {
                 Task { @MainActor in
                     if self?.authService.currentUser != nil {
                         await self?.requestNotificationPermissions()
+                        await self?.scheduleDailyReminders()
                     }
                     // small delay for smooth transition
                     try? await Task.sleep(nanoseconds: 500_000_000)
@@ -56,5 +57,10 @@ final class AppViewModel: NSObject,ObservableObject {
     // Add notification permission request
     private func requestNotificationPermissions() async {
         await notificationManager.requestPermission()
+    }
+
+    // Schedule daily reminders
+    private func scheduleDailyReminders() async {
+        await notificationManager.scheduleDailyReminders()
     }
 }
