@@ -12,6 +12,8 @@
 		C09EFD872EA3C67F0026F0CA /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C09EFD852EA3C67F0026F0CA /* Secrets.xcconfig */; };
 		C09EFD882EA3C67F0026F0CA /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C09EFD852EA3C67F0026F0CA /* Secrets.xcconfig */; };
 		C09EFD892EA3C67F0026F0CA /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C09EFD852EA3C67F0026F0CA /* Secrets.xcconfig */; };
+		C0ACAB732F8E0CE700E88D1C /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0ACAB722F8E0CE700E88D1C /* StoreKit.framework */; };
+		C0ACAB752F8E0DE300E88D1C /* FocusSpaceProducts.storekit in Resources */ = {isa = PBXBuildFile; fileRef = C0ACAB742F8E0DE300E88D1C /* FocusSpaceProducts.storekit */; };
 		C0BDD4FA2E76CFA500E69A6B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BDD4F92E76CFA500E69A6B /* WidgetKit.framework */; };
 		C0BDD4FC2E76CFA500E69A6B /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BDD4FB2E76CFA500E69A6B /* SwiftUI.framework */; };
 		C0BDD50D2E76CFA700E69A6B /* MonoTimerWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C0BDD4F72E76CFA500E69A6B /* MonoTimerWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -60,6 +62,8 @@
 /* Begin PBXFileReference section */
 		C015ACBE2EB06EF4009E1C01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C09EFD852EA3C67F0026F0CA /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		C0ACAB722F8E0CE700E88D1C /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		C0ACAB742F8E0DE300E88D1C /* FocusSpaceProducts.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = FocusSpaceProducts.storekit; sourceTree = "<group>"; };
 		C0BDD4F72E76CFA500E69A6B /* MonoTimerWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MonoTimerWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0BDD4F92E76CFA500E69A6B /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		C0BDD4FB2E76CFA500E69A6B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -143,6 +147,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0ACAB732F8E0CE700E88D1C /* StoreKit.framework in Frameworks */,
 				C0CAEB8E2E5B0D280035D5D1 /* Supabase in Frameworks */,
 				C0CAEB8C2E5B0D280035D5D1 /* Auth in Frameworks */,
 			);
@@ -176,6 +181,7 @@
 		C0BDD4F82E76CFA500E69A6B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C0ACAB722F8E0CE700E88D1C /* StoreKit.framework */,
 				C0BDD4F92E76CFA500E69A6B /* WidgetKit.framework */,
 				C0BDD4FB2E76CFA500E69A6B /* SwiftUI.framework */,
 			);
@@ -185,6 +191,7 @@
 		C0CAEB3D2E58B8020035D5D1 = {
 			isa = PBXGroup;
 			children = (
+				C0ACAB742F8E0DE300E88D1C /* FocusSpaceProducts.storekit */,
 				C015ACBE2EB06EF4009E1C01 /* PrivacyInfo.xcprivacy */,
 				C09EFD842EA3C6430026F0CA /* Config */,
 				C0D802E62E7856C400853307 /* FocusSpaceWidgetsExtension.entitlements */,
@@ -370,6 +377,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C09EFD862EA3C67F0026F0CA /* Secrets.xcconfig in Resources */,
+				C0ACAB752F8E0DE300E88D1C /* FocusSpaceProducts.storekit in Resources */,
 				C015ACBF2EB06EF4009E1C01 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
