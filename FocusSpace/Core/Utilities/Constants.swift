@@ -35,10 +35,16 @@ enum AppConstants {
     
     // MARK: - UI
     enum UI {
+        static let circleSize: CGFloat = 220
+        static let circleFrameSize: CGFloat = circleSize + 2
         static let cornerRadius: CGFloat = 12
         static let largePadding: CGFloat = 24
         static let mediumPadding: CGFloat = 16
         static let smallPadding: CGFloat = 8
+    }
+    
+    enum Premium {
+        static let minPremiumValue: Int = 4
     }
 }
 

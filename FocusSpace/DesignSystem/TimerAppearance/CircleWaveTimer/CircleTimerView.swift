@@ -23,15 +23,21 @@ struct CircleTimerView: View {
                 // Circle outline
                 Circle()
                     .stroke(AppColors.primary, lineWidth: 2)
-                    .frame(width: size, height: size)
+                    .frame(
+                        width: AppConstants.UI.circleFrameSize,
+                        height: AppConstants.UI.circleFrameSize
+                    )
                 
                 // Wave fill
                 CircleWaveView(progress: progress, offset: waveOffset)
-                    .frame(width: size, height: size)
+                    .frame(
+                        width: AppConstants.UI.circleSize,
+                        height: AppConstants.UI.circleSize
+                    )
                     .clipShape(Circle())
                     .onAppear {
                         withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
-                            waveOffset = size
+                            waveOffset = AppConstants.UI.circleSize
                         }
                     }
                 

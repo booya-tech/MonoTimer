@@ -13,9 +13,9 @@ struct TimerControlsView: View {
     var body: some View {
         HStack(spacing: 16) {
             if timerViewModel.isIdle {
-                CircleStartButton {
+                CircleStartButton(action: {
                     timerViewModel.start()
-                }
+                }, isHapticsEnabled: timerViewModel.preferences.isHapticsEnabled)
             } else if timerViewModel.isRunning {
                 if !timerViewModel.preferences.isStrictModeEnabled {
                     PrimaryButton(title: "Pause") {

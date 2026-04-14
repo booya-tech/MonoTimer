@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject private var preferences = AppPreferences.shared
+    @EnvironmentObject private var preferences: AppPreferences
 
     var body: some View {
         List {
@@ -110,4 +110,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(AppPreferences.shared)
 }

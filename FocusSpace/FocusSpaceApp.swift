@@ -15,6 +15,7 @@ struct FocusSpaceApp: App {
         WindowGroup {
              RootView()
                 .environmentObject(appViewModel)
+                .environmentObject(AppPreferences.shared)
         }
     }
 }
