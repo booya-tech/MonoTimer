@@ -12,6 +12,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var timerViewModel: TimerViewModel
+    @StateObject private var habitStreaksVM = HabitStreaksBoardViewModel()
     @State private var showingSignOutAlert = false
     
     var body: some View {
@@ -22,6 +23,15 @@ struct ProfileView: View {
                     email: authService.currentUser?.email ?? AppString.unknown,
                     memberSince: memberSinceDate
                 )
+
+                // Habit Streaks Board
+                HabitStreaksBoardView(vm: habitStreaksVM)
+                    .onAppear {
+                        habitStreaksVM.updateSessions(timerViewModel.completedSessions)
+                    }
+                    .onChange(of: timerViewModel.completedSessions) { _, sessions in
+                        habitStreaksVM.updateSessions(sessions)
+                    }
                 
                 // Quick Stats Section
                 quickStatsSection
