@@ -46,19 +46,31 @@ enum AppString {
     // Section Title
     static let paywallHeaderSectionTitle = "Select Plan"
     // Plan Labels
+    static let paywallStandard = "Standard"
     static let paywallYearly = "Yearly"
     static let paywallMonthly = "Monthly"
+    static let paywallFreeForever = "Free forever"
     static let paywallPeriodYear = "year"
     static let paywallPeriodMonth = "month"
     static let paywallSubscribe = "Subscribe"
+    static let paywallCurrentPlan = "Current Plan"
     static func paywallSaveLabel(_ percent: Int) -> String {
         "Save \(percent)% vs monthly"
     }
     static func paywallGetPremium(_ price: String) -> String {
         "Get Premium — \(price)"
     }
-    // Features
+    // Standard Features
     static let paywallWhatYouGet = "What you get"
+    static let paywallFeatureBasicTimerTitle = "Basic Timer"
+    static let paywallFeatureBasicTimerSubtitle = "Focus and break timer with presets"
+    static let paywallFeatureFocusSessionsTitle = "Focus Sessions"
+    static let paywallFeatureFocusSessionsSubtitle = "Track your daily focus sessions"
+    static let paywallFeatureSessionHistoryTitle = "Session History"
+    static let paywallFeatureSessionHistorySubtitle = "View your past focus activity"
+    static let paywallFeatureLightDarkModeTitle = "Light & Dark Mode"
+    static let paywallFeatureLightDarkModeSubtitle = "Choose the appearance that suits you"
+    // Premium Features
     static let paywallFeaturePremiumColorsTitle = "Premium Wave Colors"
     static let paywallFeaturePremiumColorsSubtitle = "All 8 gradient wave themes with glow effects"
     static let paywallFeatureExclusiveThemesTitle = "Exclusive Themes"
