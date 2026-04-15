@@ -10,7 +10,8 @@ import SwiftUI
 struct TimerAppearance: View {
     @EnvironmentObject private var preferences: AppPreferences
     @State private var waveOffset: CGFloat = 0
-    
+    @State private var showPaywall = false
+
     private var selectedColor: WaveColor {
         WaveColor(rawValue: preferences.waveColorIndex) ?? .defaultColor
     }
@@ -29,6 +30,9 @@ struct TimerAppearance: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .gesture(swipeGesture)
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -88,120 +92,62 @@ struct TimerAppearance: View {
     // MARK: - Color Buttons
     private var colorButtons: some View {
         VStack(spacing: 16) {
-            if preferences.isPremiumUser {
-                // Free colors
-                HStack(spacing: 16) {
-                    ForEach(WaveColor.freeColors, id: \.rawValue) { waveColor in
-                        colorButtonPremium(for: waveColor)
-                    }
+            // Free colors
+            HStack(spacing: 16) {
+                ForEach(WaveColor.freeColors, id: \.rawValue) { waveColor in
+                    colorButtonsNotPremium(for: waveColor)
                 }
-                
-                // Premium colors — row 1
-                HStack(spacing: 16) {
-                    ForEach(WaveColor.premiumColorsRow1, id: \.rawValue) { waveColor in
-                        colorButtonPremium(for: waveColor)
-                    }
+            }
+            
+            // Premium colors — row 1
+            HStack(spacing: 16) {
+                ForEach(WaveColor.premiumColorsRow1, id: \.rawValue) { waveColor in
+                    colorButtonsPremium(for: waveColor)
                 }
-                
-                // Premium colors — row 2
-                HStack(spacing: 16) {
-                    ForEach(WaveColor.premiumColorsRow2, id: \.rawValue) { waveColor in
-                        colorButtonPremium(for: waveColor)
-                    }
-                }
-            } else {
-                // Free colors
-                HStack(spacing: 16) {
-                    ForEach(WaveColor.freeColors, id: \.rawValue) { waveColor in
-                        colorButtonNotPremium(for: waveColor)
-                    }
-                }
-                
-                // Premium colors — row 1
-                HStack(spacing: 16) {
-                    ForEach(WaveColor.premiumColorsRow1, id: \.rawValue) { waveColor in
-                        colorButtonNotPremium(for: waveColor)
-                    }
-                }
-                
-                // Premium colors — row 2
-                HStack(spacing: 16) {
-                    ForEach(WaveColor.premiumColorsRow2, id: \.rawValue) { waveColor in
-                        colorButtonNotPremium(for: waveColor)
-                    }
+            }
+            
+            // Premium colors — row 2
+            HStack(spacing: 16) {
+                ForEach(WaveColor.premiumColorsRow2, id: \.rawValue) { waveColor in
+                    colorButtonsPremium(for: waveColor)
                 }
             }
         }
     }
     
-    private func colorButtonNotPremium(for waveColor: WaveColor) -> some View {
+    private func colorButtonsNotPremium(for waveColor: WaveColor) -> some View {
         Button {
             withAnimation(.easeInOut(duration: 0.3)) {
                 preferences.waveColorIndex = waveColor.rawValue
             }
             HapticManager.shared.light()
         } label: {
-            ZStack {
-                if waveColor.isPremium {
-                    Group {
-                        // Premium: gradient fill + glow
-                        Circle()
-                            .fill(waveColor.gradient)
-                            .frame(width: 44, height: 44)
-                            .shadow(color: waveColor.glowColor.opacity(0.5), radius: 6)
-                        
-                        
-                        ZStack(alignment: .center) {
-                            Circle()
-                                .fill(Color.black.opacity(0.5))
-                                .frame(width: 44, height: 44)
-                            
-                            Image(systemName: "lock.fill")
-                                .font(.body)
-                                .foregroundStyle(AppColors.primary)
-                        }
-                    }
-                } else {
-                    // Free: solid color
-                    Circle()
-                        .fill(waveColor.color)
-                        .opacity(0.5)
-                        .frame(width: 44, height: 44)
-                }
-            }
-            .overlay(
-                Circle()
-                    .stroke(AppColors.primaryText, lineWidth: selectedColor == waveColor ? 3 : 0)
+            ColorButtonPaletteView(
+                waveColor: waveColor,
+                style: .normal,
+                stage: .enable,
+                isSelected: selectedColor == waveColor
             )
         }
-        .disabled(waveColor.isPremium)
     }
     
-    private func colorButtonPremium(for waveColor: WaveColor) -> some View {
+    private func colorButtonsPremium(for waveColor: WaveColor) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                preferences.waveColorIndex = waveColor.rawValue
-            }
-            HapticManager.shared.light()
-        } label: {
-            ZStack {
-                if waveColor.isPremium {
-                    // Premium: gradient fill + glow
-                    Circle()
-                        .fill(waveColor.gradient)
-                        .frame(width: 44, height: 44)
-                        .shadow(color: waveColor.glowColor.opacity(0.5), radius: 6)
-                } else {
-                    // Free: solid color
-                    Circle()
-                        .fill(waveColor.color)
-                        .opacity(0.5)
-                        .frame(width: 44, height: 44)
+            if !preferences.isPremiumUser {
+                showPaywall = true
+                Logger.log("tapped premium color")
+            } else {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    preferences.waveColorIndex = waveColor.rawValue
                 }
+                HapticManager.shared.light()
             }
-            .overlay(
-                Circle()
-                    .stroke(AppColors.primaryText, lineWidth: selectedColor == waveColor ? 3 : 0)
+        } label: {
+            ColorButtonPaletteView(
+                waveColor: waveColor,
+                style: .gradient,
+                stage: preferences.isPremiumUser ? .enable : .disable,
+                isSelected: selectedColor == waveColor
             )
         }
     }
