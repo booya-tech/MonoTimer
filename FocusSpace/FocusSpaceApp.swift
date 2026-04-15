@@ -10,12 +10,14 @@ import SwiftUI
 @main
 struct FocusSpaceApp: App {
     @StateObject private var appViewModel = AppViewModel()
+    @ObservedObject private var storeKitManager = StoreKitManager.shared
 
     var body: some Scene {
         WindowGroup {
              RootView()
                 .environmentObject(appViewModel)
                 .environmentObject(AppPreferences.shared)
+                .environmentObject(storeKitManager)
         }
     }
 }
