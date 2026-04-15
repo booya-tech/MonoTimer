@@ -61,7 +61,7 @@
           ],
           "productID" : "com.focusspace.premium.monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "premium-monthly-subscription",
+          "referenceName" : "Premium Monthly",
           "subscriptionGroupID" : "F6622695",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -89,9 +89,9 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.focusspace.premium.yealy",
+          "productID" : "com.focusspace.premium.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "premium-yearly-subscription",
+          "referenceName" : "Premium Yearly",
           "subscriptionGroupID" : "F6622695",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

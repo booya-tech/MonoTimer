@@ -38,6 +38,17 @@ final class StoreKitManager: ObservableObject {
         products.first { $0.id == AppConstants.StoreKit.premiumYearly }
     }
 
+    // MARK: - Current Plan
+    var currentPlan: UserPlans {
+        if purchasedProductIDs.contains(AppConstants.StoreKit.premiumMonthly) {
+            return .monthly
+        } else if purchasedProductIDs.contains(AppConstants.StoreKit.premiumYearly) {
+            return .yearly
+        } else {
+            return .standard
+        }
+    }
+
     // MARK: - Init
 
     private init() {
