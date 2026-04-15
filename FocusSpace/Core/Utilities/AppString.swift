@@ -19,6 +19,9 @@ enum AppString {
     static let about = "About"
     static let unknown = "Unknown"
     static let delete = "Delete"
+    static let retry = "Retry"
+    static let skip = "Skip"
+    static let ok = "OK"
     
     // Profile View
     static let profileViewSignOutTitle = "Are you sure you want to sign out? Your data will be synced before signing out."
@@ -34,4 +37,40 @@ enum AppString {
     
     // Habit Streaks Board View
     static let habitStreaksTitle = "Habit Streaks"
+    
+    // Paywall View
+    // Error State
+    static let paywallErrorTitle = "Unable to load plans"
+    static let paywallErrorSubTitle = "Check your connection and try again."
+    static let paywallAlertError = "Purchase Error"
+    // Section Title
+    static let paywallHeaderSectionTitle = "Select Plan"
+    // Plan Labels
+    static let paywallYearly = "Yearly"
+    static let paywallMonthly = "Monthly"
+    static let paywallPeriodYear = "year"
+    static let paywallPeriodMonth = "month"
+    static let paywallSubscribe = "Subscribe"
+    static func paywallSaveLabel(_ percent: Int) -> String {
+        "Save \(percent)% vs monthly"
+    }
+    static func paywallGetPremium(_ price: String) -> String {
+        "Get Premium — \(price)"
+    }
+    // Features
+    static let paywallWhatYouGet = "What you get"
+    static let paywallFeaturePremiumColorsTitle = "Premium Wave Colors"
+    static let paywallFeaturePremiumColorsSubtitle = "All 8 gradient wave themes with glow effects"
+    static let paywallFeatureExclusiveThemesTitle = "Exclusive Themes"
+    static let paywallFeatureExclusiveThemesSubtitle = "New premium themes added regularly"
+    static let paywallFeatureEarlyAccessTitle = "Early Access"
+    static let paywallFeatureEarlyAccessSubtitle = "Be the first to try new features"
+    static let paywallFeatureSupportDevTitle = "Support Development"
+    static let paywallFeatureSupportDevSubtitle = "Help keep MonoTimer ad-free"
+    // Bottom CTA
+    static let paywallAutoRenewDisclaimer = "Plans auto-renew. Cancel anytime in Settings."
+    static let paywallRestorePurchases = "Restore Purchases"
+    static let paywallTerms = "Terms"
+    static let paywallPrivacy = "Privacy"
+    static let paywallSeparator = "·"
 }

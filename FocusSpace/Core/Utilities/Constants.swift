@@ -13,10 +13,22 @@ enum AppConstants {
     //MARK: - App Name
     static let appName = "MonoTimer"
     
+    #if DEBUG
+    static let isDebugMode = true
+    #else
+    static let isDebugMode = false
+    #endif
+    
     //MARK: - Icons
     public enum Icon {
         static let chevronLeft = "chevron.left"
         static let chevronRight = "chevron.right"
+        static let wifiSlash = "wifi.slash"
+        static let crownFill = "crown.fill"
+        static let paintpaletteFill = "paintpalette.fill"
+        static let sparkles = "sparkles"
+        static let starFill = "star.fill"
+        static let heartFill = "heart.fill"
     }
     
     // MARK: - URLs
@@ -24,6 +36,9 @@ enum AppConstants {
         static let github = "https://github.com/booya-tech/MonoTimer"
         static let privacyPolicy = "https://github.com/booya-tech/MonoTimer/blob/main/docs/privacy-policy.md"
         static let termsOfService = "https://github.com/booya-tech/MonoTimer/blob/main/docs/terms-of-service.md"
+
+        static let privacyPolicyURL = URL(string: privacyPolicy)!
+        static let termsOfServiceURL = URL(string: termsOfService)!
     }
     
     // MARK: - Timer Defaults
@@ -51,6 +66,18 @@ enum AppConstants {
     
     enum Premium {
         static let minPremiumValue: Int = 4
+    }
+    
+    // MARK: - StoreKit
+    enum StoreKit {
+        static let premiumMonthly = "com.focusspace.premium.monthly"
+        static let premiumYearly = "com.focusspace.premium.yearly"
+        static let subscriptionGroupID = "premium"
+        
+        static let allProductIDs: Set<String> = [
+            premiumMonthly,
+            premiumYearly
+        ]
     }
 }
 
@@ -107,17 +134,4 @@ enum DailyReminder: String, CaseIterable {
         case .evening:  return "Start your session to keep the flow alive. 🌊"
         }
     }
-}
-
-// MARK: - StoreKit
-
-enum StoreKit {
-    static let premiumMonthly = "com.focusspace.premium.monthly"
-    static let premiumYearly = "com.focusspace.premium.yearly"
-    static let subscriptionGroupID = "premium"
-    
-    static let allProductIDs: Set<String> = [
-        premiumMonthly,
-        premiumYearly
-    ]
 }
