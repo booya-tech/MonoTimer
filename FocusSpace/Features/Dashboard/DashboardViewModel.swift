@@ -29,6 +29,7 @@ struct DayData: Identifiable {
 /// View model for dashboard statistics and analytics
 final class DashboardViewModel: ObservableObject {
     @Published var selectedPeriod: TimePeriod = .week
+    @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
     @Published var periodStats = StatsData(
         totalSessions: 0, totalMinutes: 0, longestStreak: 0, currentStreak: 0,
         dailyGoalProgress: 0.0
@@ -46,7 +47,28 @@ final class DashboardViewModel: ObservableObject {
     // Settings
     @Published var dailyGoalMinutes: Int = 120  // 2 hours daily goal
 
+    // MARK: - Year Pagination
+
+    private var currentYear: Int {
+        Calendar.current.component(.year, from: Date())
+    }
+
+    var canGoBack: Bool {
+        selectedYear > currentYear - AppConstants.Chart.maxYearsBack
+    }
+
+    var canGoForward: Bool {
+        selectedYear < currentYear
+    }
+
+    var yearChartTitle: String {
+        String(selectedYear)
+    }
+
+    private var cachedSessions: [Session] = []
+
     func updateStats(with sessions: [Session]) {
+        cachedSessions = sessions
         todayStats = computeTodayStats(from: sessions)
         weeklyStats = computeWeekStats(from: sessions)
         weeklyData = computeWeeklyData(from: sessions)
@@ -55,14 +77,31 @@ final class DashboardViewModel: ObservableObject {
     }
 
     func updatePeriodStats(with sessions: [Session]) {
+        cachedSessions = sessions
         switch selectedPeriod {
         case .week:
             periodStats = weeklyStats
             periodChartData = weeklyData
         case .year:
-            periodStats = computeYearStats(from: sessions)
-            periodChartData = computeYearData(from: sessions)
+            periodStats = computeYearStats(from: sessions, year: selectedYear)
+            periodChartData = computeYearData(from: sessions, year: selectedYear)
         }
+    }
+
+    func goToPreviousYear() {
+        guard canGoBack else { return }
+        selectedYear -= 1
+        updatePeriodStats(with: cachedSessions)
+    }
+
+    func goToNextYear() {
+        guard canGoForward else { return }
+        selectedYear += 1
+        updatePeriodStats(with: cachedSessions)
+    }
+
+    func resetSelectedYear() {
+        selectedYear = currentYear
     }
 
     // Update stats based on completed sessions
@@ -133,15 +172,20 @@ final class DashboardViewModel: ObservableObject {
         }.reversed()
     }
 
-    private func computeYearStats(from sessions: [Session]) -> StatsData {
+    private func computeYearStats(from sessions: [Session], year: Int) -> StatsData {
         let calendar = Calendar.current
-        let today = Date()
-        let yearAgo = calendar.date(byAdding: .year, value: -1, to: today) ?? today
+        var startComponents = DateComponents()
+        startComponents.year = year
+        startComponents.month = 1
+        startComponents.day = 1
 
-        let yearSessions = sessions.filter { session in
-            session.startAt >= yearAgo && session.startAt <= today
+        guard let yearStart = calendar.date(from: startComponents),
+              let yearEnd = calendar.date(byAdding: .year, value: 1, to: yearStart)
+        else {
+            return StatsData(totalSessions: 0, totalMinutes: 0, longestStreak: 0, currentStreak: 0, dailyGoalProgress: 0.0)
         }
 
+        let yearSessions = sessions.filter { $0.startAt >= yearStart && $0.startAt < yearEnd }
         let focusSessions = yearSessions.filter { $0.type == .focus }
         let totalMinutes = focusSessions.reduce(0) { $0 + $1.durationMinutes }
 
@@ -154,31 +198,32 @@ final class DashboardViewModel: ObservableObject {
         )
     }
 
-    private func computeYearData(from sessions: [Session]) -> [DayData] {
+    private func computeYearData(from sessions: [Session], year: Int) -> [DayData] {
         let calendar = Calendar.current
-        let today = Date()
+        let monthFormatter = DateFormatter()
+        monthFormatter.dateFormat = "MMM"
 
-        return (0..<12).compactMap { monthOffset in
-            guard let monthStart = calendar.date(byAdding: .month, value: -monthOffset, to: today)
+        return (1...12).compactMap { month in
+            var components = DateComponents()
+            components.year = year
+            components.month = month
+            components.day = 1
+
+            guard let monthStart = calendar.date(from: components),
+                  let monthEnd = calendar.date(byAdding: .month, value: 1, to: monthStart)
             else { return nil }
-            guard let monthEnd = calendar.date(byAdding: .month, value: 1, to: monthStart) else {
-                return nil
-            }
 
-            let monthSessions = sessions.filter { session in
-                session.startAt >= monthStart && session.startAt < monthEnd
+            let focusSessions = sessions.filter {
+                $0.type == .focus && $0.startAt >= monthStart && $0.startAt < monthEnd
             }
-
-            let focusSessions = monthSessions.filter { $0.type == .focus }
             let totalMinutes = focusSessions.reduce(0) { $0 + $1.durationMinutes }
 
-            let monthFormatter = DateFormatter()
-            monthFormatter.dateFormat = "MMM"  // Jan, Feb, Mar
-
             return DayData(
-                day: monthFormatter.string(from: monthStart), minutes: totalMinutes,
-                date: monthStart)
-        }.reversed()
+                day: monthFormatter.string(from: monthStart),
+                minutes: totalMinutes,
+                date: monthStart
+            )
+        }
     }
 
     private func computeCurrentStreak(from sessions: [Session]) -> Int {
