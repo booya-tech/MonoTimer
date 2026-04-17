@@ -75,7 +75,7 @@ struct ContentView: View {
                     .frame(width: 200)
             }
 
-            Spacer()
+            Spacer().frame(minHeight: 50)
 
             // Preset selection (only when idle)
             if timerViewModel.isIdle {
@@ -84,11 +84,10 @@ struct ContentView: View {
                 )
             }
 
-            Spacer().frame(height: 16)
-
             // Timer controls
             TimerControlsView(timerViewModel: timerViewModel)
             
+            Spacer().frame(height: 16)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
