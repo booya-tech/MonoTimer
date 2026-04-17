@@ -239,9 +239,9 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             featureRow(icon: AppConstants.Icon.clockFill,
                        title: AppString.paywallFeatureFocusSessionsTitle,
                        subtitle: AppString.paywallFeatureFocusSessionsSubtitle)
-            featureRow(icon: AppConstants.Icon.starFill,
-                       title: AppString.paywallFeatureSessionHistoryTitle,
-                       subtitle: AppString.paywallFeatureSessionHistorySubtitle)
+            featureRow(icon: AppConstants.Icon.hourglassBottomHalfFilled,
+                       title: AppString.paywallFeatureCustomDurationTitle,
+                       subtitle: AppString.paywallFeatureCustomDurationSubtitle)
             featureRow(icon: AppConstants.Icon.circleFill,
                        title: AppString.paywallFeatureLightDarkModeTitle,
                        subtitle: AppString.paywallFeatureLightDarkModeSubtitle)
@@ -256,6 +256,9 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             featureRow(icon: AppConstants.Icon.sparkles,
                        title: AppString.paywallFeatureExclusiveThemesTitle,
                        subtitle: AppString.paywallFeatureExclusiveThemesSubtitle)
+            featureRow(icon: AppConstants.Icon.chartBarFill,
+                       title: AppString.paywallFeatureSessionHistoryTitle,
+                       subtitle: AppString.paywallFeatureSessionHistorySubtitle)
             featureRow(icon: AppConstants.Icon.starFill,
                        title: AppString.paywallFeatureEarlyAccessTitle,
                        subtitle: AppString.paywallFeatureEarlyAccessSubtitle)
@@ -327,7 +330,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
                     .multilineTextAlignment(.center)
             }
 
-            HStack(spacing: 16) {
+            HStack(spacing: 4) {
                 Button(AppString.paywallRestorePurchases) {
                     Task { await vm.restorePurchases() }
                 }
