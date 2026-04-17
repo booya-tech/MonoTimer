@@ -28,11 +28,13 @@ enum AppConstants {
         static let timerFill = "timer"
         static let clockFill = "clock.fill"
         static let circleFill = "circle.lefthalf.filled"
-        static let crownFill = "crown.fill"
+        static let crownFill = "👑"
         static let paintpaletteFill = "paintpalette.fill"
         static let sparkles = "sparkles"
         static let starFill = "star.fill"
+        static let hourglassBottomHalfFilled = "hourglass.bottomhalf.filled"
         static let heartFill = "heart.fill"
+        static let chartBarFill = "chart.bar.fill"
     }
     
     // MARK: - URLs
@@ -71,6 +73,39 @@ enum AppConstants {
     enum Premium {
         static let minPremiumValue: Int = 4
     }
+    
+    // MARK: - Chart
+    enum Chart {
+        static let maxYearsBack = 10
+    }
+    
+    #if DEBUG
+    // MARK: - Mock Data
+    enum MockData {
+        static let yearlyChartData: [Int: [DayData]] = {
+            let calendar = Calendar.current
+            let currentYear = calendar.component(.year, from: Date())
+            let monthFormatter = DateFormatter()
+            monthFormatter.dateFormat = "MMM"
+
+            var result: [Int: [DayData]] = [:]
+            for yearOffset in 0...Chart.maxYearsBack {
+                let year = currentYear - yearOffset
+                let data: [DayData] = (1...12).compactMap { month in
+                    var comps = DateComponents()
+                    comps.year = year
+                    comps.month = month
+                    comps.day = 1
+                    guard let date = calendar.date(from: comps) else { return nil }
+                    let minutes = Int.random(in: 0...300)
+                    return DayData(day: monthFormatter.string(from: date), minutes: minutes, date: date)
+                }
+                result[year] = data
+            }
+            return result
+        }()
+    }
+    #endif
     
     // MARK: - StoreKit
     enum StoreKit {

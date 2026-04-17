@@ -66,6 +66,8 @@ enum AppString {
     static let paywallFeatureBasicTimerSubtitle = "Focus and break timer with presets"
     static let paywallFeatureFocusSessionsTitle = "Focus Sessions"
     static let paywallFeatureFocusSessionsSubtitle = "Track your daily focus sessions"
+    static let paywallFeatureCustomDurationTitle = "Custom Duration"
+    static let paywallFeatureCustomDurationSubtitle = "Custom break and focus duration"
     static let paywallFeatureSessionHistoryTitle = "Session History"
     static let paywallFeatureSessionHistorySubtitle = "View your past focus activity"
     static let paywallFeatureLightDarkModeTitle = "Light & Dark Mode"
@@ -84,5 +86,5 @@ enum AppString {
     static let paywallRestorePurchases = "Restore Purchases"
     static let paywallTerms = "Terms"
     static let paywallPrivacy = "Privacy"
-    static let paywallSeparator = "·"
+    static let paywallSeparator = "|"
 }
