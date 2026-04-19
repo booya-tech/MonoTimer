@@ -234,8 +234,6 @@
 				C0BDD4FD2E76CFA500E69A6B /* FocusSpaceWidgets */,
 			);
 			name = MonoTimerWidgetsExtension;
-			packageProductDependencies = (
-			);
 			productName = FocusSpaceWidgetsExtension;
 			productReference = C0BDD4F72E76CFA500E69A6B /* MonoTimerWidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -283,8 +281,6 @@
 				C0CAEB562E58B8040035D5D1 /* FocusSpaceTests */,
 			);
 			name = MonoTimerTests;
-			packageProductDependencies = (
-			);
 			productName = FocusSpaceTests;
 			productReference = C0CAEB532E58B8040035D5D1 /* MonoTimerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -306,8 +302,6 @@
 				C0CAEB602E58B8040035D5D1 /* FocusSpaceUITests */,
 			);
 			name = MonoTimerUITests;
-			packageProductDependencies = (
-			);
 			productName = FocusSpaceUITests;
 			productReference = C0CAEB5D2E58B8040035D5D1 /* MonoTimerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -459,7 +453,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpaceWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 68;
 				DEVELOPMENT_TEAM = 45C3927649;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FocusSpaceWidgets/Info.plist;
@@ -470,7 +464,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.8;
+				MARKETING_VERSION = 1.3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.boopannachai.MonoTimer.MonoTimerWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -490,7 +484,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpaceWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 68;
 				DEVELOPMENT_TEAM = 45C3927649;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FocusSpaceWidgets/Info.plist;
@@ -501,7 +495,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.8;
+				MARKETING_VERSION = 1.3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.boopannachai.MonoTimer.MonoTimerWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -644,7 +638,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpace/FocusSpace.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 57;
+				CURRENT_PROJECT_VERSION = 68;
 				DEVELOPMENT_TEAM = 45C3927649;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -664,7 +658,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.boopannachai.MonoTimer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -689,7 +683,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpace/FocusSpace.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 57;
+				CURRENT_PROJECT_VERSION = 68;
 				DEVELOPMENT_TEAM = 45C3927649;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -709,7 +703,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.boopannachai.MonoTimer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
