@@ -24,6 +24,7 @@ struct ContentView: View {
                 }
             }
         }
+        .analyticsScreen(AppConstants.Analytics.Screen.timer)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 NavigationLink(

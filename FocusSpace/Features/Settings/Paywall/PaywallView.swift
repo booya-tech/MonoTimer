@@ -12,6 +12,7 @@ import StoreKit
 
 struct PaywallView<VM: PaywallViewModelProtocol>: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.analytics) private var analytics
     @ObservedObject private var vm: VM
 
     init(vm: VM) {
@@ -57,7 +58,10 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(AppString.skip) { dismiss() }
+                    Button(AppString.skip) {
+                        analytics.capture(.paywallDismissed)
+                        dismiss()
+                    }
                         .font(AppTypography.body)
                         .foregroundStyle(AppColors.primaryText)
                 }
@@ -73,6 +77,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             .onChange(of: vm.selectedUserPlans) { _, newPlan in
                 vm.onPlanChanged(newPlan)
             }
+            .analyticsScreen(AppConstants.Analytics.Screen.paywall)
         }
     }
 
@@ -359,8 +364,11 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
 // MARK: - Convenience Init
 
 extension PaywallView where VM == PaywallViewModel {
-    init() {
-        self.init(vm: PaywallViewModel())
+    /// Convenience initializer that builds a default `PaywallViewModel`. The
+    /// `source` is forwarded to the `paywall_viewed` analytics event so each
+    /// presentation point in the app is distinguishable in funnels.
+    init(source: String = "unknown") {
+        self.init(vm: PaywallViewModel(source: source))
     }
 }
 

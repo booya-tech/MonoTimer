@@ -23,6 +23,7 @@ final class StoreKitManager: ObservableObject {
 
     private var transactionListener: Task<Void, Error>?
     private var preferences: AppPreferences { AppPreferences.shared }
+    private var analytics: AnalyticsService { AnalyticsBootstrap.shared }
 
     // MARK: - Computed Helpers
 
@@ -115,6 +116,8 @@ final class StoreKitManager: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
+        let preRestoreIDs = purchasedProductIDs
+
         do {
             try await AppStore.sync()
         } catch {
@@ -122,6 +125,11 @@ final class StoreKitManager: ObservableObject {
             errorMessage = "Unable to restore purchases. Check your connection."
         }
         await updatePurchasedProducts()
+
+        let restored = purchasedProductIDs.subtracting(preRestoreIDs)
+        for productID in restored {
+            analytics.capture(.purchaseRestored(productId: productID))
+        }
     }
 
     // MARK: - Entitlement Check
@@ -157,11 +165,22 @@ final class StoreKitManager: ObservableObject {
                     let transaction = try await self.checkVerified(result)
                     await transaction.finish()
                     await self.updatePurchasedProducts()
+                    await self.captureIfRenewal(transaction)
                 } catch {
                     Logger.log("Unverified transaction: \(error.localizedDescription)")
                 }
             }
         }
+    }
+
+    /// `Transaction.updates` fires for initial purchases, renewals, refunds,
+    /// revocations, and family-sharing changes. We only emit
+    /// `subscription_renewed` when this is genuinely a renewal of a still-active
+    /// subscription. Initial purchases are already captured by the paywall flow.
+    private func captureIfRenewal(_ transaction: Transaction) {
+        guard transaction.revocationDate == nil,
+              transaction.purchaseDate != transaction.originalPurchaseDate else { return }
+        analytics.capture(.subscriptionRenewed(productId: transaction.productID))
     }
 
     // MARK: - Verification

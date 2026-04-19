@@ -118,6 +118,20 @@ enum AppConstants {
             premiumYearly
         ]
     }
+
+    // MARK: - Analytics
+    enum Analytics {
+        /// Human-readable screen names sent to PostHog via `.analyticsScreen(_:)`.
+        /// Centralized so renames stay consistent across the app and dashboards.
+        enum Screen {
+            static let timer = "Timer"
+            static let dashboard = "Dashboard"
+            static let profile = "Profile"
+            static let settings = "Settings"
+            static let auth = "Auth"
+            static let paywall = "Paywall"
+        }
+    }
 }
 
 //MARK: - Session Notification

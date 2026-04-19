@@ -87,7 +87,21 @@ struct SettingsView: View {
                         .labelsHidden()
                 }
             }
-            
+
+            // MARK: - Privacy
+            Section("Privacy") {
+                HStack {
+                    SettingsRow(
+                        icon: "chart.bar.xaxis",
+                        title: "Share Usage Data",
+                        subtitle: "Help improve MonoTimer with anonymous analytics"
+                    )
+                    Spacer()
+                    Toggle("", isOn: $preferences.isAnalyticsEnabled)
+                        .labelsHidden()
+                }
+            }
+
             // MARK: - Reset
             Section("Reset") {
                 Button {
@@ -120,6 +134,7 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .analyticsScreen(AppConstants.Analytics.Screen.settings)
     }
 }
 

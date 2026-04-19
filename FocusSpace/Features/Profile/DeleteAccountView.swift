@@ -67,6 +67,7 @@ struct DeleteAccountView: View {
                         SecureField("Enter password", text: $viewModel.password)
                             .textContentType(.password)
                             .autocapitalization(.none)
+                            .analyticsMask()
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)

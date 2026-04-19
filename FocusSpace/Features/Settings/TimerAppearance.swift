@@ -31,7 +31,7 @@ struct TimerAppearance: View {
         .contentShape(Rectangle())
         .gesture(swipeGesture)
         .sheet(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(source: "timer_appearance")
         }
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)

@@ -62,6 +62,7 @@ struct ProfileView: View {
         }
         .navigationTitle(AppString.profileViewTitle)
         .navigationBarTitleDisplayMode(.large)
+        .analyticsScreen(AppConstants.Analytics.Screen.profile)
         .alert(AppString.signOut, isPresented: $showingSignOutAlert) {
             Button(AppString.cancel, role: .cancel) { }
             Button(AppString.signOut, role: .destructive) {
@@ -108,7 +109,7 @@ struct ProfileView: View {
             .buttonStyle(.plain)
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(source: "profile")
         }
     }
 

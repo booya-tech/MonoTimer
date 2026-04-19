@@ -51,6 +51,7 @@ struct UserInfoSection: View {
             Text(email)
                 .font(AppTypography.body)
                 .foregroundColor(AppColors.primaryText)
+                .analyticsMask()
             
             // Member Since
             Text("Member since \(memberSince)")

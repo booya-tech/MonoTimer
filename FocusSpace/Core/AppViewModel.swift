@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import Auth
 
 @MainActor
 final class AppViewModel: NSObject,ObservableObject {
@@ -14,16 +15,28 @@ final class AppViewModel: NSObject,ObservableObject {
     @Published var notificationManager = NotificationManager.shared
     @Published var isLoading = true
 
+    private let analytics: AnalyticsService
     private var cancellables = Set<AnyCancellable>()
+    // Tracks the last user id we identified to avoid duplicate identify calls
+    // when `currentUser` re-publishes the same value.
+    private var lastIdentifiedUserId: String?
 
-    override init() {
+    @MainActor
+    init(analytics: AnalyticsService? = nil) {
+        // Default value resolved here (not in the parameter list) because
+        // default expressions are evaluated in a nonisolated context, while
+        // `AnalyticsBootstrap.shared` is `@MainActor`-isolated.
+        self.analytics = analytics ?? AnalyticsBootstrap.shared
         super.init()
 
         authService.$isInitialized
             .filter { $0 == true }
             .sink { [weak self] _ in
                 Task { @MainActor in
-                    if self?.authService.currentUser != nil {
+                    if let user = self?.authService.currentUser {
+                        // Restore identity for users who were already signed in
+                        // before this launch (session restored from Keychain).
+                        self?.identifyIfNeeded(user)
                         await self?.requestNotificationPermissions()
                         await self?.scheduleDailyReminders()
                     }
@@ -34,12 +47,45 @@ final class AppViewModel: NSObject,ObservableObject {
                 }
             }
             .store(in: &cancellables)
-        
+
+        authService.$currentUser
+            .removeDuplicates { $0?.id == $1?.id }
+            .sink { [weak self] user in
+                guard let self else { return }
+                if let user {
+                    self.identifyIfNeeded(user)
+                } else if self.lastIdentifiedUserId != nil {
+                    self.analytics.capture(.authSignedOut)
+                    self.analytics.reset()
+                    self.lastIdentifiedUserId = nil
+                }
+            }
+            .store(in: &cancellables)
+
         authService.objectWillChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
             }
             .store(in: &cancellables)
+    }
+
+    /// Sends `identify` to analytics exactly once per signed-in user. The
+    /// `auth_signed_in` event is also captured on the first identify of a
+    /// session.
+    private func identifyIfNeeded(_ user: User) {
+        let userId = user.id.uuidString
+        guard lastIdentifiedUserId != userId else { return }
+
+        // Read the actual provider string from Supabase's `appMetadata` so new
+        // providers (google, facebook, magic-link, etc.) aren't silently
+        // bucketed as "email".
+        let provider = user.appMetadata["provider"]?.stringValue ?? "unknown"
+        analytics.identify(
+            userId: userId,
+            properties: ["auth_provider": provider]
+        )
+        analytics.capture(.authSignedIn(method: provider))
+        lastIdentifiedUserId = userId
     }
 
     var isAuthenticated: Bool {

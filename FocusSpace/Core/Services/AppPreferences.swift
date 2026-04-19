@@ -61,6 +61,18 @@ final class AppPreferences: ObservableObject {
         }
     }
 
+    // MARK: - Privacy
+    // User-facing opt-out for product analytics. When false, the analytics
+    // service is put into opt-out mode and stops capturing events.
+    @Published var isAnalyticsEnabled: Bool {
+        didSet {
+            defaults.set(isAnalyticsEnabled, forKey: "isAnalyticsEnabled")
+            isAnalyticsEnabled
+                ? AnalyticsBootstrap.shared.optIn()
+                : AnalyticsBootstrap.shared.optOut()
+        }
+    }
+
     // MARK: - Initialization
     private init() {
         self.selectedFocusDuration = defaults.object(forKey: "selectedFocusDuration") as? Int ?? 25
@@ -71,6 +83,7 @@ final class AppPreferences: ObservableObject {
         self.isSoundEnabled = defaults.object(forKey: "isSoundEnabled") as? Bool ?? true
         self.isHapticsEnabled = defaults.object(forKey: "isHapticsEnabled") as? Bool ?? true
         self.isPremiumUser = defaults.bool(forKey: "isPremiumUser")
+        self.isAnalyticsEnabled = defaults.object(forKey: "isAnalyticsEnabled") as? Bool ?? true
     }
 
     // Reset all preferences to defaults
@@ -82,6 +95,7 @@ final class AppPreferences: ObservableObject {
         waveColorIndex = 0
         isSoundEnabled = true
         isHapticsEnabled = true
+        isAnalyticsEnabled = true
     }
     
     #if DEBUG
