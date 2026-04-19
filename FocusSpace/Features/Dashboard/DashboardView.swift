@@ -58,30 +58,27 @@ struct DashboardView: View {
                         // Period Selector
                         PeriodSelector(selectedPeriod: $viewModel.selectedPeriod)
                             .onChange(of: viewModel.selectedPeriod) {
-                                viewModel.resetSelectedYear()
+                                viewModel.resetPeriodNavigation()
                                 viewModel.updatePeriodStats(with: timerViewModel.completedSessions)
                             }
                             .blur(radius: preferences.isPremiumUser ? 0 : 6)
                             .allowsTightening(preferences.isPremiumUser)
                         
                         Spacer().frame(height: 16)
-                        // Weekly Chart
+                        // Period Chart (week or year)
                         WeeklyChart(
                             data: viewModel.periodChartData,
-                            title: viewModel.selectedPeriod == .year
-                                ? viewModel.yearChartTitle
-                                : viewModel.selectedPeriod.rawValue,
+                            title: viewModel.periodChartTitle,
                             canGoBack: viewModel.canGoBack,
                             canGoForward: viewModel.canGoForward,
-                            onGoBack: { viewModel.goToPreviousYear() },
-                            onGoForward: { viewModel.goToNextYear() }
+                            onGoBack: { viewModel.goToPrevious() },
+                            onGoForward: { viewModel.goToNext() }
                         )
                         .blur(radius: preferences.isPremiumUser ? 0 : 6)
-                        .allowsTightening(preferences.isPremiumUser)
-                        
-                        if !preferences.isPremiumUser {
-                            unlockPremiumBtn
-                        }
+                        .allowsHitTesting(preferences.isPremiumUser)
+                    }
+                    if !preferences.isPremiumUser {
+                        unlockPremiumBtn
                     }
                 }
                 
