@@ -27,6 +27,7 @@ struct DashboardView: View {
         }        
         .navigationTitle("Dashboard")
         .navigationBarTitleDisplayMode(.large)
+        .analyticsScreen("Dashboard")
         .onAppear() {
             updateStats()
         }
@@ -88,7 +89,7 @@ struct DashboardView: View {
             .padding()
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(source: "dashboard")
         }
     }
     

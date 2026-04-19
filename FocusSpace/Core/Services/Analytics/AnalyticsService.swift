@@ -1,0 +1,136 @@
+//
+//  AnalyticsService.swift
+//  FocusSpace
+//
+//  Created by Panachai Sulsaksakul on 4/19/26.
+//
+//  Protocol-based analytics abstraction so ViewModels never import a concrete
+//  analytics SDK directly. Concrete implementations live alongside this file.
+//
+
+import Foundation
+
+// MARK: - Strongly-typed analytics events
+
+/// All app-level analytics events. Keep this list as the single source of truth
+/// for naming. Each case maps to a snake_case event name in the concrete service.
+enum AnalyticsEvent {
+    // App lifecycle
+    case appLaunched
+
+    // Auth
+    case authSignedIn(method: String)
+    case authSignedOut
+
+    // Timer
+    case timerStarted(presetMinutes: Int, sessionType: String, isStrictMode: Bool)
+    case timerPaused(remainingSeconds: Int)
+    case timerResumed
+    case timerReset
+    case timerCompleted(sessionType: String, durationSeconds: Int)
+    case breakSkipped
+
+    // Paywall / Purchases
+    case paywallViewed(source: String)
+    case paywallPurchaseStarted(productId: String)
+    case paywallPurchaseSucceeded(productId: String)
+    case paywallPurchaseFailed(productId: String, reason: String)
+    case paywallDismissed
+    case purchaseRestored(productId: String)
+    case subscriptionRenewed(productId: String)
+
+    // Settings
+    case settingChanged(key: String, value: String)
+}
+
+extension AnalyticsEvent {
+    /// snake_case event name sent to the analytics backend.
+    var name: String {
+        switch self {
+        case .appLaunched: return "app_launched"
+        case .authSignedIn: return "auth_signed_in"
+        case .authSignedOut: return "auth_signed_out"
+        case .timerStarted: return "timer_started"
+        case .timerPaused: return "timer_paused"
+        case .timerResumed: return "timer_resumed"
+        case .timerReset: return "timer_reset"
+        case .timerCompleted: return "timer_completed"
+        case .breakSkipped: return "break_skipped"
+        case .paywallViewed: return "paywall_viewed"
+        case .paywallPurchaseStarted: return "paywall_purchase_started"
+        case .paywallPurchaseSucceeded: return "paywall_purchase_succeeded"
+        case .paywallPurchaseFailed: return "paywall_purchase_failed"
+        case .paywallDismissed: return "paywall_dismissed"
+        case .purchaseRestored: return "purchase_restored"
+        case .subscriptionRenewed: return "subscription_renewed"
+        case .settingChanged: return "setting_changed"
+        }
+    }
+
+    /// Per-event properties forwarded to the backend.
+    var properties: [String: Any]? {
+        switch self {
+        case .appLaunched, .authSignedOut, .timerResumed, .timerReset,
+             .breakSkipped, .paywallDismissed:
+            return nil
+
+        case .authSignedIn(let method):
+            return ["method": method]
+
+        case .timerStarted(let presetMinutes, let sessionType, let isStrictMode):
+            return [
+                "preset_minutes": presetMinutes,
+                "session_type": sessionType,
+                "is_strict_mode": isStrictMode
+            ]
+
+        case .timerPaused(let remainingSeconds):
+            return ["remaining_seconds": remainingSeconds]
+
+        case .timerCompleted(let sessionType, let durationSeconds):
+            return [
+                "session_type": sessionType,
+                "duration_seconds": durationSeconds
+            ]
+
+        case .paywallViewed(let source):
+            return ["source": source]
+
+        case .paywallPurchaseStarted(let productId),
+             .paywallPurchaseSucceeded(let productId),
+             .purchaseRestored(let productId),
+             .subscriptionRenewed(let productId):
+            return ["product_id": productId]
+
+        case .paywallPurchaseFailed(let productId, let reason):
+            return ["product_id": productId, "reason": reason]
+
+        case .settingChanged(let key, let value):
+            return ["key": key, "value": value]
+        }
+    }
+}
+
+// MARK: - Service protocol
+
+/// Lightweight analytics abstraction used by ViewModels and Views.
+/// Implementations: `PostHogAnalyticsService`, `NoOpAnalyticsService`.
+protocol AnalyticsService: AnyObject {
+    func capture(_ event: AnalyticsEvent)
+    func identify(userId: String, properties: [String: Any]?)
+    func reset()
+    func screen(_ name: String, properties: [String: Any]?)
+    func isFeatureEnabled(_ key: String) -> Bool
+    func optIn()
+    func optOut()
+}
+
+extension AnalyticsService {
+    func identify(userId: String) {
+        identify(userId: userId, properties: nil)
+    }
+
+    func screen(_ name: String) {
+        screen(name, properties: nil)
+    }
+}

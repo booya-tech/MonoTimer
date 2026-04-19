@@ -23,6 +23,7 @@ final class StoreKitManager: ObservableObject {
 
     private var transactionListener: Task<Void, Error>?
     private var preferences: AppPreferences { AppPreferences.shared }
+    private var analytics: AnalyticsService { AnalyticsBootstrap.shared }
 
     // MARK: - Computed Helpers
 
@@ -115,6 +116,8 @@ final class StoreKitManager: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
+        let preRestoreIDs = purchasedProductIDs
+
         do {
             try await AppStore.sync()
         } catch {
@@ -122,6 +125,11 @@ final class StoreKitManager: ObservableObject {
             errorMessage = "Unable to restore purchases. Check your connection."
         }
         await updatePurchasedProducts()
+
+        let restored = purchasedProductIDs.subtracting(preRestoreIDs)
+        for productID in restored {
+            analytics.capture(.purchaseRestored(productId: productID))
+        }
     }
 
     // MARK: - Entitlement Check
@@ -157,11 +165,18 @@ final class StoreKitManager: ObservableObject {
                     let transaction = try await self.checkVerified(result)
                     await transaction.finish()
                     await self.updatePurchasedProducts()
+                    await self.captureRenewal(productId: transaction.productID)
                 } catch {
                     Logger.log("Unverified transaction: \(error.localizedDescription)")
                 }
             }
         }
+    }
+
+    /// Forwarded from the transaction listener so renewal events are captured
+    /// on the main actor where the analytics service lives.
+    private func captureRenewal(productId: String) {
+        analytics.capture(.subscriptionRenewed(productId: productId))
     }
 
     // MARK: - Verification

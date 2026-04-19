@@ -31,6 +31,9 @@ protocol PaywallViewModelProtocol: ObservableObject {
     var isStoreLoading: Bool { get }
     var monthlyProduct: Product? { get }
     var yearlyProduct: Product? { get }
+    /// Resolved variant of the paywall, driven by the `paywall_v2` feature flag.
+    /// Defaults to `.v1` when the flag is off or analytics is disabled.
+    var variant: PaywallVariant { get }
 
     func loadInitialData() async
     func onPlanChanged(_ newPlan: UserPlans)
@@ -42,16 +45,28 @@ protocol PaywallViewModelProtocol: ObservableObject {
     func savingsPercentage(yearly: Decimal, monthly: Decimal) -> Int
 }
 
+/// A/B variant resolved from the `paywall_v2` PostHog feature flag.
+enum PaywallVariant: String {
+    case v1
+    case v2
+}
+
 @MainActor
 final class PaywallViewModel: PaywallViewModelProtocol {
     private let storeKitManager: StoreKitManager
+    private let analytics: AnalyticsService
+    /// Origin of the paywall presentation (e.g. "dashboard", "profile").
+    /// Forwarded to `paywall_viewed` and the purchase funnel events.
+    private let source: String
     private var cancellable: AnyCancellable?
+    private var hasCapturedView = false
 
     @Published var selectedProduct: Product?
     @Published var selectedUserPlans: UserPlans = .standard
     @Published var isPurchasing = false
     @Published var showError = false
     @Published var errorMessage = ""
+    @Published var variant: PaywallVariant = .v1
 
     var products: [Product] { storeKitManager.products }
     var isStoreLoading: Bool { storeKitManager.isLoading }
@@ -72,8 +87,20 @@ final class PaywallViewModel: PaywallViewModelProtocol {
         return AppString.paywallGetPremium(product.displayPrice)
     }
 
-    init(storeKitManager: StoreKitManager = .shared) {
-        self.storeKitManager = storeKitManager
+    @MainActor
+    init(
+        storeKitManager: StoreKitManager? = nil,
+        analytics: AnalyticsService? = nil,
+        source: String = "unknown"
+    ) {
+        // Defaults resolved here because `StoreKitManager.shared` and
+        // `AnalyticsBootstrap.shared` are `@MainActor`-isolated and default
+        // expressions are evaluated in a nonisolated context.
+        self.storeKitManager = storeKitManager ?? .shared
+        self.analytics = analytics ?? AnalyticsBootstrap.shared
+        self.source = source
+
+        let storeKitManager = self.storeKitManager
 
         cancellable = storeKitManager.objectWillChange
             .sink { [weak self] _ in
@@ -84,6 +111,14 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     // MARK: - Actions
 
     func loadInitialData() async {
+        // Resolve the A/B variant first so it can be sent as a property on
+        // `paywall_viewed` for clean funnel attribution in PostHog.
+        variant = analytics.isFeatureEnabled("paywall_v2") ? .v2 : .v1
+
+        if !hasCapturedView {
+            hasCapturedView = true
+            analytics.capture(.paywallViewed(source: source))
+        }
         await storeKitManager.loadProducts()
         selectedUserPlans = storeKitManager.currentPlan == .standard ? .yearly : storeKitManager.currentPlan
         selectedProduct = storeKitManager.yearlyProduct
@@ -105,10 +140,25 @@ final class PaywallViewModel: PaywallViewModelProtocol {
         isPurchasing = true
         defer { isPurchasing = false }
 
+        analytics.capture(.paywallPurchaseStarted(productId: product.id))
+
         do {
             let success = try await storeKitManager.purchase(product)
+            if success {
+                analytics.capture(.paywallPurchaseSucceeded(productId: product.id))
+            } else {
+                // false from StoreKit means userCancelled / pending - not a true error.
+                analytics.capture(.paywallPurchaseFailed(
+                    productId: product.id,
+                    reason: "cancelled_or_pending"
+                ))
+            }
             return success
         } catch {
+            analytics.capture(.paywallPurchaseFailed(
+                productId: product.id,
+                reason: error.localizedDescription
+            ))
             errorMessage = error.localizedDescription
             showError = true
             return false

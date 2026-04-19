@@ -56,6 +56,7 @@ struct AuthView: View {
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .analyticsScreen("Auth")
     }
     
     private var appHeader: some View {
@@ -79,15 +80,18 @@ struct AuthView: View {
                 .textFieldStyle(MonoTextFieldStyle())
                 .textInputAutocapitalization(.never)
                 .keyboardType(.emailAddress)
-            
+                .analyticsMask()
+
             // Password field
             SecureField("Password", text: $viewModel.password)
                 .textFieldStyle(MonoTextFieldStyle())
+                .analyticsMask()
 
             // Confirm password (only for sign up)
             if viewModel.isSignUpMode {
                 SecureField("Confirm Password", text: $viewModel.confirmPassword)
                     .textFieldStyle(MonoTextFieldStyle())
+                    .analyticsMask()
             }
 
             // Error message

@@ -24,6 +24,7 @@ struct ContentView: View {
                 }
             }
         }
+        .analyticsScreen("Timer")
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 NavigationLink(
