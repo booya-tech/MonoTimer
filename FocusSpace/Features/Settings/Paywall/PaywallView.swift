@@ -77,7 +77,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             .onChange(of: vm.selectedUserPlans) { _, newPlan in
                 vm.onPlanChanged(newPlan)
             }
-            .analyticsScreen("Paywall")
+            .analyticsScreen(AppConstants.Analytics.Screen.paywall)
         }
     }
 

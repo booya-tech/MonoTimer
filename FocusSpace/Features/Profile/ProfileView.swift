@@ -62,7 +62,7 @@ struct ProfileView: View {
         }
         .navigationTitle(AppString.profileViewTitle)
         .navigationBarTitleDisplayMode(.large)
-        .analyticsScreen("Profile")
+        .analyticsScreen(AppConstants.Analytics.Screen.profile)
         .alert(AppString.signOut, isPresented: $showingSignOutAlert) {
             Button(AppString.cancel, role: .cancel) { }
             Button(AppString.signOut, role: .destructive) {

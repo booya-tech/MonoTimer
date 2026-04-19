@@ -27,7 +27,7 @@ struct DashboardView: View {
         }        
         .navigationTitle("Dashboard")
         .navigationBarTitleDisplayMode(.large)
-        .analyticsScreen("Dashboard")
+        .analyticsScreen(AppConstants.Analytics.Screen.dashboard)
         .onAppear() {
             updateStats()
         }

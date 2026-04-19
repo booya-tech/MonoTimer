@@ -56,7 +56,7 @@ struct AuthView: View {
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .analyticsScreen("Auth")
+        .analyticsScreen(AppConstants.Analytics.Screen.auth)
     }
     
     private var appHeader: some View {

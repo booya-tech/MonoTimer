@@ -134,7 +134,7 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .analyticsScreen("Settings")
+        .analyticsScreen(AppConstants.Analytics.Screen.settings)
     }
 }
 
