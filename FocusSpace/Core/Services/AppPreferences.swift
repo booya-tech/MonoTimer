@@ -51,9 +51,10 @@ final class AppPreferences: ObservableObject {
     }
 
     // MARK: - Subscription Status
+    // Cached in UserDefaults for instant launch state; StoreKit overwrites as source of truth
     @Published var isPremiumUser: Bool {
-        didSet { 
-            defaults.set(isPremiumUser, forKey: "isPremiumUser") 
+        didSet {
+            defaults.set(isPremiumUser, forKey: "isPremiumUser")
             if !isPremiumUser && waveColorIndex >= AppConstants.Premium.minPremiumValue {
                 waveColorIndex = 0
             }
@@ -81,8 +82,13 @@ final class AppPreferences: ObservableObject {
         waveColorIndex = 0
         isSoundEnabled = true
         isHapticsEnabled = true
-        isPremiumUser = false
     }
+    
+    #if DEBUG
+    func togglePremiumUser() {
+        isPremiumUser.toggle()
+    }
+    #endif
 }
 
 

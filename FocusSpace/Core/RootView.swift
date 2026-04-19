@@ -13,6 +13,8 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject private var preferences: AppPreferences
+    @EnvironmentObject private var storeKitManager: StoreKitManager
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -29,8 +31,10 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: appViewModel.isLoading)
         .animation(.easeInOut(duration: 0.3), value: appViewModel.authService.currentUser != nil)
-        .onAppear {
-            preferences.isPremiumUser = true
+        .onChange(of: scenePhase) { (_, newPhase) in
+            if newPhase == .active {
+                Task { await storeKitManager.updatePurchasedProducts() }
+            }
         }
     }
 }
@@ -39,4 +43,5 @@ struct RootView: View {
     RootView()
         .environmentObject(AppViewModel())
         .environmentObject(AppPreferences.shared)
+        .environmentObject(StoreKitManager.shared)
 }

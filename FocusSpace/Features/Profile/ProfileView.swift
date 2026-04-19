@@ -10,10 +10,14 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject var preferences: AppPreferences
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var timerViewModel: TimerViewModel
     @StateObject private var habitStreaksVM = HabitStreaksBoardViewModel()
+    @ObservedObject private var storeKit = StoreKitManager.shared
     @State private var showingSignOutAlert = false
+    @State private var showPaywall = false
+    @State private var isRestoring = false
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -32,6 +36,13 @@ struct ProfileView: View {
                     .onChange(of: timerViewModel.completedSessions) { _, sessions in
                         habitStreaksVM.updateSessions(sessions)
                     }
+
+                // Premium Section
+                if preferences.isPremiumUser {
+                    premiumSection
+                } else {
+                    notPremiumSection
+                }
                 
                 // Quick Stats Section
                 quickStatsSection
@@ -62,7 +73,119 @@ struct ProfileView: View {
             Text(AppString.profileViewSignOutTitle)
         }
     }
-    
+
+    // MARK: - Premium Section
+    private var notPremiumSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Subscription")
+                .font(AppTypography.title3)
+                .foregroundColor(AppColors.primaryText)
+
+            Button {
+                showPaywall = true
+            } label: {
+                HStack {
+                    Image(systemName: "crown.fill")
+                        .font(.body)
+                    Text("Go Premium")
+                        .font(AppTypography.body)
+                    Spacer()
+                    Image(systemName: AppConstants.Icon.chevronRight)
+                        .font(.caption)
+                        .foregroundStyle(AppColors.secondaryText)
+                }
+                .foregroundStyle(AppColors.primaryText)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(AppColors.secondaryBackground)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(AppColors.secondaryText.opacity(0.2), lineWidth: 1)
+                        }
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
+    }
+
+    // MARK: - Premium Section (active subscriber)
+    private var premiumSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Subscription")
+                .font(AppTypography.title3)
+                .foregroundColor(AppColors.primaryText)
+
+            VStack(spacing: 0) {
+                HStack {
+                    Image(systemName: "crown.fill")
+                        .font(.body)
+                    Text("\(storeKit.currentPlan.rawValue) Plan")
+                        .font(AppTypography.body)
+                    Spacer()
+                    Text("Active")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColors.secondaryText)
+                }
+                .foregroundStyle(AppColors.primaryText)
+                .padding()
+
+                Divider().padding(.leading)
+
+                Button {
+                    Task {
+                        isRestoring = true
+                        await storeKit.restorePurchases()
+                        isRestoring = false
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.body)
+                        Text(AppString.paywallRestorePurchases)
+                            .font(AppTypography.body)
+                        Spacer()
+                        if isRestoring {
+                            ProgressView().scaleEffect(0.8)
+                        }
+                    }
+                    .foregroundStyle(AppColors.primaryText)
+                    .padding()
+                }
+                .buttonStyle(.plain)
+                .disabled(isRestoring)
+
+                Divider().padding(.leading)
+
+                Link(destination: URL(string: "https://apps.apple.com/account/subscriptions")!) {
+                    HStack {
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.body)
+                        Text("Manage Subscription")
+                            .font(AppTypography.body)
+                        Spacer()
+                        Image(systemName: AppConstants.Icon.chevronRight)
+                            .font(.caption)
+                            .foregroundStyle(AppColors.secondaryText)
+                    }
+                    .foregroundStyle(AppColors.primaryText)
+                    .padding()
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppColors.secondaryBackground)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(AppColors.secondaryText.opacity(0.2), lineWidth: 1)
+                    }
+            )
+        }
+    }
+
     // MARK: - Quick Stats Section
     private var quickStatsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -114,45 +237,6 @@ struct ProfileView: View {
                     value: appVersion,
                     icon: ""
                 )
-                
-                //                Divider()
-                //                    .background(AppColors.secondaryText.opacity(0.2))
-                
-                //                InfoRow(title: "Build", value: buildNumber)
-                
-                /// Description
-                /// might use in the future
-                //                Divider()
-                //                    .background(AppColors.secondaryText.opacity(0.2))
-                
-                //                Button(action: openGitHub) {
-                //                    HStack {
-                //                        Text("GitHub")
-                //                            .font(AppTypography.body)
-                //                            .foregroundColor(AppColors.primaryText)
-                //                        Spacer()
-                //                        Image(systemName: "arrow.up.right")
-                //                            .font(.caption)
-                //                            .foregroundColor(AppColors.secondaryText)
-                //                    }
-                //                    .padding()
-                //                }
-                //
-                //                Divider()
-                //                    .background(AppColors.secondaryText.opacity(0.2))
-                //
-                //                Button(action: openPrivacyPolicy) {
-                //                    HStack {
-                //                        Text("Privacy Policy")
-                //                            .font(AppTypography.body)
-                //                            .foregroundColor(AppColors.primaryText)
-                //                        Spacer()
-                //                        Image(systemName: "arrow.up.right")
-                //                            .font(.caption)
-                //                            .foregroundColor(AppColors.secondaryText)
-                //                    }
-                //                    .padding()
-                //                }
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
@@ -229,57 +313,12 @@ struct ProfileView: View {
     private var appVersion: String {
         AppInfo.version
     }
-    
-    private var buildNumber: String {
-        AppInfo.build
-    }
-    
-    // MARK: - Helper Methods
-    private func calculateStreak() -> Int {
-        let calendar = Calendar.current
-        let sessions = timerViewModel.completedSessions
-            .filter { $0.type == .focus }
-            .sorted { $0.startAt > $1.startAt }
-        
-        guard !sessions.isEmpty else { return 0 }
-        
-        var streak = 0
-        var currentDate = calendar.startOfDay(for: Date())
-        
-        for session in sessions {
-            let sessionDate = calendar.startOfDay(for: session.startAt)
-            
-            if calendar.isDate(sessionDate, inSameDayAs: currentDate) {
-                if streak == 0 { streak = 1 }
-                continue
-            } else if let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDate),
-                      calendar.isDate(sessionDate, inSameDayAs: previousDay) {
-                streak += 1
-                currentDate = previousDay
-            } else {
-                break
-            }
-        }
-        
-        return streak
-    }
-    
-    private func openGitHub() {
-        if let url = URL(string: "https://github.com/booya-tech/FocusSpace") {
-            UIApplication.shared.open(url)
-        }
-    }
-    
-    private func openPrivacyPolicy() {
-        if let url = URL(string: "https://github.com/booya-tech/FocusSpace/blob/main/docs/privacy-policy.md") {
-            UIApplication.shared.open(url)
-        }
-    }
 }
 
 #Preview {
     NavigationStack {
         ProfileView()
+            .environmentObject(AppPreferences.shared)
             .environmentObject(AuthService())
             .environmentObject(TimerViewModel(sessionSync: SessionSyncService(
                 localRepository: LocalSessionRepository(),

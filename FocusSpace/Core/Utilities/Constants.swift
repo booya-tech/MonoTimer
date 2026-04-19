@@ -13,10 +13,28 @@ enum AppConstants {
     //MARK: - App Name
     static let appName = "MonoTimer"
     
+    #if DEBUG
+    static let isDebugMode = true
+    #else
+    static let isDebugMode = false
+    #endif
+    
     //MARK: - Icons
     public enum Icon {
         static let chevronLeft = "chevron.left"
         static let chevronRight = "chevron.right"
+        static let wifiSlash = "wifi.slash"
+        static let personFill = "person.fill"
+        static let timerFill = "timer"
+        static let clockFill = "clock.fill"
+        static let circleFill = "circle.lefthalf.filled"
+        static let crownFill = "👑"
+        static let paintpaletteFill = "paintpalette.fill"
+        static let sparkles = "sparkles"
+        static let starFill = "star.fill"
+        static let hourglassBottomHalfFilled = "hourglass.bottomhalf.filled"
+        static let heartFill = "heart.fill"
+        static let chartBarFill = "chart.bar.fill"
     }
     
     // MARK: - URLs
@@ -24,6 +42,9 @@ enum AppConstants {
         static let github = "https://github.com/booya-tech/MonoTimer"
         static let privacyPolicy = "https://github.com/booya-tech/MonoTimer/blob/main/docs/privacy-policy.md"
         static let termsOfService = "https://github.com/booya-tech/MonoTimer/blob/main/docs/terms-of-service.md"
+
+        static let privacyPolicyURL = URL(string: privacyPolicy)!
+        static let termsOfServiceURL = URL(string: termsOfService)!
     }
     
     // MARK: - Timer Defaults
@@ -51,6 +72,51 @@ enum AppConstants {
     
     enum Premium {
         static let minPremiumValue: Int = 4
+    }
+    
+    // MARK: - Chart
+    enum Chart {
+        static let maxYearsBack = 10
+    }
+    
+    #if DEBUG
+    // MARK: - Mock Data
+    enum MockData {
+        static let yearlyChartData: [Int: [DayData]] = {
+            let calendar = Calendar.current
+            let currentYear = calendar.component(.year, from: Date())
+            let monthFormatter = DateFormatter()
+            monthFormatter.dateFormat = "MMM"
+
+            var result: [Int: [DayData]] = [:]
+            for yearOffset in 0...Chart.maxYearsBack {
+                let year = currentYear - yearOffset
+                let data: [DayData] = (1...12).compactMap { month in
+                    var comps = DateComponents()
+                    comps.year = year
+                    comps.month = month
+                    comps.day = 1
+                    guard let date = calendar.date(from: comps) else { return nil }
+                    let minutes = Int.random(in: 0...300)
+                    return DayData(day: monthFormatter.string(from: date), minutes: minutes, date: date)
+                }
+                result[year] = data
+            }
+            return result
+        }()
+    }
+    #endif
+    
+    // MARK: - StoreKit
+    enum StoreKit {
+        static let premiumMonthly = "com.monotimer.premium.monthly"
+        static let premiumYearly = "com.monotimer.premium.yearly"
+        static let subscriptionGroupID = "premium"
+        
+        static let allProductIDs: Set<String> = [
+            premiumMonthly,
+            premiumYearly
+        ]
     }
 }
 

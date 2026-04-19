@@ -102,6 +102,21 @@ struct SettingsView: View {
                     }
                 }
             }
+            
+            //MARK: - Toggle Premium (Debug Only)
+            if AppConstants.isDebugMode {
+                Section("Premium") {
+                    Button {
+                        preferences.togglePremiumUser()
+                        HapticManager.shared.light()
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Toggle Premium")
+                        }
+                    }
+                }
+            }
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
