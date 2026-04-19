@@ -84,9 +84,11 @@ final class AppPreferences: ObservableObject {
         isHapticsEnabled = true
     }
     
+    #if DEBUG
     func togglePremiumUser() {
         isPremiumUser.toggle()
     }
+    #endif
 }
 
 

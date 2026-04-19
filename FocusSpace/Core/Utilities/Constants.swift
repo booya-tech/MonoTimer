@@ -109,8 +109,8 @@ enum AppConstants {
     
     // MARK: - StoreKit
     enum StoreKit {
-        static let premiumMonthly = "com.focusspace.premium.monthly"
-        static let premiumYearly = "com.focusspace.premium.yearly"
+        static let premiumMonthly = "com.monotimer.premium.monthly"
+        static let premiumYearly = "com.monotimer.premium.yearly"
         static let subscriptionGroupID = "premium"
         
         static let allProductIDs: Set<String> = [

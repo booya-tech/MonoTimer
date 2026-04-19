@@ -14,8 +14,10 @@ struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var timerViewModel: TimerViewModel
     @StateObject private var habitStreaksVM = HabitStreaksBoardViewModel()
+    @ObservedObject private var storeKit = StoreKitManager.shared
     @State private var showingSignOutAlert = false
     @State private var showPaywall = false
+    @State private var isRestoring = false
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -36,7 +38,9 @@ struct ProfileView: View {
                     }
 
                 // Premium Section
-                if !preferences.isPremiumUser {
+                if preferences.isPremiumUser {
+                    premiumSection
+                } else {
                     notPremiumSection
                 }
                 
@@ -107,7 +111,81 @@ struct ProfileView: View {
             PaywallView()
         }
     }
-    
+
+    // MARK: - Premium Section (active subscriber)
+    private var premiumSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Subscription")
+                .font(AppTypography.title3)
+                .foregroundColor(AppColors.primaryText)
+
+            VStack(spacing: 0) {
+                HStack {
+                    Image(systemName: "crown.fill")
+                        .font(.body)
+                    Text("\(storeKit.currentPlan.rawValue) Plan")
+                        .font(AppTypography.body)
+                    Spacer()
+                    Text("Active")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColors.secondaryText)
+                }
+                .foregroundStyle(AppColors.primaryText)
+                .padding()
+
+                Divider().padding(.leading)
+
+                Button {
+                    Task {
+                        isRestoring = true
+                        await storeKit.restorePurchases()
+                        isRestoring = false
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.body)
+                        Text(AppString.paywallRestorePurchases)
+                            .font(AppTypography.body)
+                        Spacer()
+                        if isRestoring {
+                            ProgressView().scaleEffect(0.8)
+                        }
+                    }
+                    .foregroundStyle(AppColors.primaryText)
+                    .padding()
+                }
+                .buttonStyle(.plain)
+                .disabled(isRestoring)
+
+                Divider().padding(.leading)
+
+                Link(destination: URL(string: "https://apps.apple.com/account/subscriptions")!) {
+                    HStack {
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.body)
+                        Text("Manage Subscription")
+                            .font(AppTypography.body)
+                        Spacer()
+                        Image(systemName: AppConstants.Icon.chevronRight)
+                            .font(.caption)
+                            .foregroundStyle(AppColors.secondaryText)
+                    }
+                    .foregroundStyle(AppColors.primaryText)
+                    .padding()
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppColors.secondaryBackground)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(AppColors.secondaryText.opacity(0.2), lineWidth: 1)
+                    }
+            )
+        }
+    }
+
     // MARK: - Quick Stats Section
     private var quickStatsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
