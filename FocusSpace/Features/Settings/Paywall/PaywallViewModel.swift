@@ -17,6 +17,7 @@ enum UserPlans: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
+@MainActor
 protocol PaywallViewModelProtocol: ObservableObject {
     var selectedProduct: Product? { get }
     var selectedUserPlans: UserPlans { get set }
@@ -44,7 +45,7 @@ protocol PaywallViewModelProtocol: ObservableObject {
 @MainActor
 final class PaywallViewModel: PaywallViewModelProtocol {
     private let storeKitManager: StoreKitManager
-    private var cancellables = Set<AnyCancellable>()
+    private var cancellable: AnyCancellable?
 
     @Published var selectedProduct: Product?
     @Published var selectedUserPlans: UserPlans = .standard
@@ -52,14 +53,13 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     @Published var showError = false
     @Published var errorMessage = ""
 
-    @Published private(set) var products: [Product] = []
-    @Published private(set) var isStoreLoading = false
-    @Published private(set) var monthlyProduct: Product?
-    @Published private(set) var yearlyProduct: Product?
-    @Published private(set) var currentPlan: UserPlans = .standard
+    var products: [Product] { storeKitManager.products }
+    var isStoreLoading: Bool { storeKitManager.isLoading }
+    var monthlyProduct: Product? { storeKitManager.monthlyProduct }
+    var yearlyProduct: Product? { storeKitManager.yearlyProduct }
 
     var isActivePlan: Bool {
-        selectedUserPlans == currentPlan
+        selectedUserPlans == storeKitManager.currentPlan
     }
 
     var isStandardSelected: Bool {
@@ -74,14 +74,18 @@ final class PaywallViewModel: PaywallViewModelProtocol {
 
     init(storeKitManager: StoreKitManager = .shared) {
         self.storeKitManager = storeKitManager
-        bindStoreKitManager()
+
+        cancellable = storeKitManager.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
     }
 
     // MARK: - Actions
 
     func loadInitialData() async {
         await storeKitManager.loadProducts()
-        selectedUserPlans = .yearly
+        selectedUserPlans = storeKitManager.currentPlan == .standard ? .yearly : storeKitManager.currentPlan
         selectedProduct = storeKitManager.yearlyProduct
     }
 
@@ -138,34 +142,5 @@ final class PaywallViewModel: PaywallViewModelProtocol {
         let monthlyTotal = NSDecimalNumber(decimal: monthly).doubleValue * 12
         guard monthlyTotal > 0 else { return 0 }
         return Int(((monthlyTotal - yearlyTotal) / monthlyTotal) * 100)
-    }
-
-    // MARK: - Private
-
-    private func bindStoreKitManager() {
-        storeKitManager.$products
-            .sink { [weak self] products in
-                guard let self else { return }
-                self.products = products
-                self.monthlyProduct = products.first { $0.id == AppConstants.StoreKit.premiumMonthly }
-                self.yearlyProduct = products.first { $0.id == AppConstants.StoreKit.premiumYearly }
-            }
-            .store(in: &cancellables)
-
-        storeKitManager.$isLoading
-            .assign(to: &$isStoreLoading)
-
-        storeKitManager.$purchasedProductIDs
-            .sink { [weak self] ids in
-                guard let self else { return }
-                if ids.contains(AppConstants.StoreKit.premiumMonthly) {
-                    self.currentPlan = .monthly
-                } else if ids.contains(AppConstants.StoreKit.premiumYearly) {
-                    self.currentPlan = .yearly
-                } else {
-                    self.currentPlan = .standard
-                }
-            }
-            .store(in: &cancellables)
     }
 }
