@@ -111,8 +111,10 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     // MARK: - Actions
 
     func loadInitialData() async {
-        // Resolve the A/B variant first so it can be sent as a property on
-        // `paywall_viewed` for clean funnel attribution in PostHog.
+        // Force a fresh flag fetch before reading - on cold launch the cached
+        // value may be `false` because PostHog hasn't fetched flags yet, which
+        // would silently bias the A/B test toward `v1`.
+        await analytics.reloadFeatureFlags()
         variant = analytics.isFeatureEnabled("paywall_v2") ? .v2 : .v1
 
         if !hasCapturedView {

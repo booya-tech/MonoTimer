@@ -25,9 +25,11 @@ final class PostHogAnalyticsService: AnalyticsService {
         // and are not human-readable.
         config.captureScreenViews = false
         config.captureApplicationLifecycleEvents = true
-        // Anonymous events allowed pre-login. PostHog only creates a person
-        // profile after `identify()` is called. This is the recommended default.
-        config.personProfiles = .identifiedOnly
+        // Use `.always` so anonymous pre-login events create a person profile
+        // that PostHog can merge with the identified user on sign-in. With
+        // `.identifiedOnly` the activation funnel `app_launched -> auth_signed_in`
+        // splits across two distinct ids and breaks attribution.
+        config.personProfiles = .always
 
         // Session replay is opt-in. When enabled, the SDK auto-masks all text
         // inputs and images, and `.analyticsMask()` is applied to PII surfaces
@@ -69,6 +71,14 @@ final class PostHogAnalyticsService: AnalyticsService {
 
     func isFeatureEnabled(_ key: String) -> Bool {
         PostHogSDK.shared.isFeatureEnabled(key)
+    }
+
+    func reloadFeatureFlags() async {
+        await withCheckedContinuation { continuation in
+            PostHogSDK.shared.reloadFeatureFlags {
+                continuation.resume()
+            }
+        }
     }
 
     func optIn() {

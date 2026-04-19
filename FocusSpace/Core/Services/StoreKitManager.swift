@@ -165,7 +165,7 @@ final class StoreKitManager: ObservableObject {
                     let transaction = try await self.checkVerified(result)
                     await transaction.finish()
                     await self.updatePurchasedProducts()
-                    await self.captureRenewal(productId: transaction.productID)
+                    await self.captureIfRenewal(transaction)
                 } catch {
                     Logger.log("Unverified transaction: \(error.localizedDescription)")
                 }
@@ -173,10 +173,14 @@ final class StoreKitManager: ObservableObject {
         }
     }
 
-    /// Forwarded from the transaction listener so renewal events are captured
-    /// on the main actor where the analytics service lives.
-    private func captureRenewal(productId: String) {
-        analytics.capture(.subscriptionRenewed(productId: productId))
+    /// `Transaction.updates` fires for initial purchases, renewals, refunds,
+    /// revocations, and family-sharing changes. We only emit
+    /// `subscription_renewed` when this is genuinely a renewal of a still-active
+    /// subscription. Initial purchases are already captured by the paywall flow.
+    private func captureIfRenewal(_ transaction: Transaction) {
+        guard transaction.revocationDate == nil,
+              transaction.purchaseDate != transaction.originalPurchaseDate else { return }
+        analytics.capture(.subscriptionRenewed(productId: transaction.productID))
     }
 
     // MARK: - Verification

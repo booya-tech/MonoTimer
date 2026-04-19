@@ -121,6 +121,10 @@ protocol AnalyticsService: AnyObject {
     func reset()
     func screen(_ name: String, properties: [String: Any]?)
     func isFeatureEnabled(_ key: String) -> Bool
+    /// Forces a fresh fetch of remote feature flag values. Call before reading
+    /// a flag whose value must be authoritative on first launch (e.g. A/B
+    /// variants on the paywall).
+    func reloadFeatureFlags() async
     func optIn()
     func optOut()
 }

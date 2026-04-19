@@ -16,6 +16,7 @@ final class NoOpAnalyticsService: AnalyticsService {
     func reset() {}
     func screen(_ name: String, properties: [String: Any]?) {}
     func isFeatureEnabled(_ key: String) -> Bool { false }
+    func reloadFeatureFlags() async {}
     func optIn() {}
     func optOut() {}
 }

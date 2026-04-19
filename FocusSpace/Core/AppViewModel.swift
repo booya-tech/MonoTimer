@@ -76,9 +76,10 @@ final class AppViewModel: NSObject,ObservableObject {
         let userId = user.id.uuidString
         guard lastIdentifiedUserId != userId else { return }
 
-        // Mirrors AuthService.isAppleUser - AnyJSON's ExpressibleByStringLiteral
-        // conformance enables direct equality with a string literal.
-        let provider = user.appMetadata["provider"] == "apple" ? "apple" : "email"
+        // Read the actual provider string from Supabase's `appMetadata` so new
+        // providers (google, facebook, magic-link, etc.) aren't silently
+        // bucketed as "email".
+        let provider = user.appMetadata["provider"]?.stringValue ?? "unknown"
         analytics.identify(
             userId: userId,
             properties: ["auth_provider": provider]
