@@ -117,10 +117,12 @@ struct WeeklyChart: View {
 #if DEBUG
 #Preview("Yearly — With Pagination") {
     struct YearlyPaginationPreview: View {
-        private let currentYear = Calendar.current.component(.year, from: Date())
+        private static let gregorianCalendar = Calendar(identifier: .gregorian)
+        private let currentYear = gregorianCalendar.component(.year, from: Date())
         private let mockData = AppConstants.MockData.yearlyChartData
 
-        @State private var selectedYear = Calendar.current.component(.year, from: Date())
+        @State private var selectedYear = YearlyPaginationPreview.gregorianCalendar
+            .component(.year, from: Date())
 
         var body: some View {
             WeeklyChart(

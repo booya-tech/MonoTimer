@@ -28,8 +28,13 @@ struct DayData: Identifiable {
 @MainActor
 /// View model for dashboard statistics and analytics
 final class DashboardViewModel: ObservableObject {
+    /// Gregorian calendar used for all year-based logic so that BE locales
+    /// (e.g. Thai Buddhist) don't shift the displayed year or filter ranges.
+    private static let gregorianCalendar = Calendar(identifier: .gregorian)
+
     @Published var selectedPeriod: TimePeriod = .week
-    @Published var selectedYear: Int = Calendar.current.component(.year, from: Date())
+    @Published var selectedYear: Int = DashboardViewModel.gregorianCalendar
+        .component(.year, from: Date())
     @Published var periodStats = StatsData(
         totalSessions: 0, totalMinutes: 0, longestStreak: 0, currentStreak: 0,
         dailyGoalProgress: 0.0
@@ -50,7 +55,7 @@ final class DashboardViewModel: ObservableObject {
     // MARK: - Year Pagination
 
     private var currentYear: Int {
-        Calendar.current.component(.year, from: Date())
+        Self.gregorianCalendar.component(.year, from: Date())
     }
 
     var canGoBack: Bool {
@@ -173,7 +178,7 @@ final class DashboardViewModel: ObservableObject {
     }
 
     private func computeYearStats(from sessions: [Session], year: Int) -> StatsData {
-        let calendar = Calendar.current
+        let calendar = Self.gregorianCalendar
         var startComponents = DateComponents()
         startComponents.year = year
         startComponents.month = 1
@@ -199,7 +204,7 @@ final class DashboardViewModel: ObservableObject {
     }
 
     private func computeYearData(from sessions: [Session], year: Int) -> [DayData] {
-        let calendar = Calendar.current
+        let calendar = Self.gregorianCalendar
         let monthFormatter = DateFormatter()
         monthFormatter.dateFormat = "MMM"
 
