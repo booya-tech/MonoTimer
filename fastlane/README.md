@@ -53,7 +53,7 @@ Submit to App Store for review
 [bundle exec] fastlane ios bump_patch
 ```
 
-Increment patch version number
+Increment patch version number (app + widget)
 
 ### ios bump_minor
 
@@ -61,7 +61,7 @@ Increment patch version number
 [bundle exec] fastlane ios bump_minor
 ```
 
-Increment minor version number
+Increment minor version number (app + widget)
 
 ----
 

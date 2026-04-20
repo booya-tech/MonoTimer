@@ -17,7 +17,6 @@ final class AppPreferences: ObservableObject {
     private let defaults = UserDefaults.standard
 
     // MARK: - Timer Settings
-    // Custom focus durations (in minutes)
     // Custom focus duration (in minutes)
     @Published var selectedFocusDuration: Int {
         didSet { defaults.set(selectedFocusDuration, forKey: "selectedFocusDuration") }
@@ -51,6 +50,29 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(isHapticsEnabled, forKey: "isHapticsEnabled") }
     }
 
+    // MARK: - Subscription Status
+    // Cached in UserDefaults for instant launch state; StoreKit overwrites as source of truth
+    @Published var isPremiumUser: Bool {
+        didSet {
+            defaults.set(isPremiumUser, forKey: "isPremiumUser")
+            if !isPremiumUser && waveColorIndex >= AppConstants.Premium.minPremiumValue {
+                waveColorIndex = 0
+            }
+        }
+    }
+
+    // MARK: - Privacy
+    // User-facing opt-out for product analytics. When false, the analytics
+    // service is put into opt-out mode and stops capturing events.
+    @Published var isAnalyticsEnabled: Bool {
+        didSet {
+            defaults.set(isAnalyticsEnabled, forKey: "isAnalyticsEnabled")
+            isAnalyticsEnabled
+                ? AnalyticsBootstrap.shared.optIn()
+                : AnalyticsBootstrap.shared.optOut()
+        }
+    }
+
     // MARK: - Initialization
     private init() {
         self.selectedFocusDuration = defaults.object(forKey: "selectedFocusDuration") as? Int ?? 25
@@ -60,6 +82,8 @@ final class AppPreferences: ObservableObject {
         self.waveColorIndex = defaults.object(forKey: "waveColorIndex") as? Int ?? 0
         self.isSoundEnabled = defaults.object(forKey: "isSoundEnabled") as? Bool ?? true
         self.isHapticsEnabled = defaults.object(forKey: "isHapticsEnabled") as? Bool ?? true
+        self.isPremiumUser = defaults.bool(forKey: "isPremiumUser")
+        self.isAnalyticsEnabled = defaults.object(forKey: "isAnalyticsEnabled") as? Bool ?? true
     }
 
     // Reset all preferences to defaults
@@ -71,7 +95,14 @@ final class AppPreferences: ObservableObject {
         waveColorIndex = 0
         isSoundEnabled = true
         isHapticsEnabled = true
+        isAnalyticsEnabled = true
     }
+    
+    #if DEBUG
+    func togglePremiumUser() {
+        isPremiumUser.toggle()
+    }
+    #endif
 }
 
 

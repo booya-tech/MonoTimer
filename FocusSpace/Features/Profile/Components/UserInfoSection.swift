@@ -10,6 +10,7 @@
 import SwiftUI
 
 struct UserInfoSection: View {
+    @EnvironmentObject private var preferences: AppPreferences
     let email: String
     let memberSince: String
     
@@ -26,19 +27,31 @@ struct UserInfoSection: View {
             //                        .font(.system(size: 36))
             //                        .foregroundColor(AppColors.background)
             //                }
-            Circle()
-                .fill(AppColors.primary)
-                .frame(width: 80, height: 80)
-                .overlay {
-                    Text("Hi")
-                        .font(.system(size: 36))
-                        .foregroundColor(AppColors.background)
-                }
+            ZStack {
+                // Profile Circle
+                Circle()
+                    .fill(AppColors.primary)
+                    .frame(width: 80, height: 80)
+                    .overlay(
+                        ZStack {
+                            if preferences.isPremiumUser {
+                                Text("👑")
+                                    .font(.title2)
+                                    .rotationEffect(.degrees(28))
+                                    .offset(x: 30, y: -44)
+                            }
+                            Text("Hi")
+                                .font(.system(size: 36))
+                                .foregroundColor(AppColors.background)
+                        }
+                    )
+            }
             
             // Email
             Text(email)
                 .font(AppTypography.body)
                 .foregroundColor(AppColors.primaryText)
+                .analyticsMask()
             
             // Member Since
             Text("Member since \(memberSince)")

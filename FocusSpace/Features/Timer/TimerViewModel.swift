@@ -39,6 +39,7 @@ final class TimerViewModel: ObservableObject {
     @Published var preferences = AppPreferences.shared
 
     private let sessionSync: SessionSyncService
+    private let analytics: AnalyticsService
 
     // Live Activity
     private let activityManager = ActivityManager.shared
@@ -68,8 +69,14 @@ final class TimerViewModel: ObservableObject {
     private var sessionStartTime: Date?
 
     // Initialization
-    init(sessionSync: SessionSyncService) {
+    @MainActor
+    init(
+        sessionSync: SessionSyncService,
+        analytics: AnalyticsService? = nil
+    ) {
         self.sessionSync = sessionSync
+        // See `AppViewModel.init` for why the default is resolved here.
+        self.analytics = analytics ?? AnalyticsBootstrap.shared
 
         Task {
             await loadSessions()
@@ -140,6 +147,12 @@ final class TimerViewModel: ObservableObject {
 
         triggerHaptic(.light)
 
+        analytics.capture(.timerStarted(
+            presetMinutes: durationMinutes,
+            sessionType: sessionType.rawValue,
+            isStrictMode: preferences.isStrictModeEnabled
+        ))
+
         // Start Live Activity
         Task {
             await activityManager.startNewLiveActivity(
@@ -168,7 +181,8 @@ final class TimerViewModel: ObservableObject {
         stopTimer()
         triggerHaptic(.light)
 
-        // Update Live Activity to show paused state
+        analytics.capture(.timerPaused(remainingSeconds: remainingSeconds))
+
         Task {
             await activityManager.updateLiveActivity(
                 sessionType: currentSessionType,
@@ -176,9 +190,8 @@ final class TimerViewModel: ObservableObject {
                 remainingSeconds: remainingSeconds,
                 isRunning: false
             )
+            await notificationManager.cancelAllTimerNotifications()
         }
-
-        notificationManager.cancelAllTimerNotifications()
     }
 
     // Resume the paused timer
@@ -190,6 +203,8 @@ final class TimerViewModel: ObservableObject {
         startTimer()
 
         triggerHaptic(.medium)
+
+        analytics.capture(.timerResumed)
 
         // Update Live Activity to show running state
         Task {
@@ -214,6 +229,11 @@ final class TimerViewModel: ObservableObject {
 
     // Stop and reset the timer
     func stop() {
+        // Only emit `timer_reset` for meaningful user-driven stops. `start()`
+        // calls `stop()` to clear leftover state on first launch where the
+        // timer was already idle - we don't want to spam the event there.
+        let wasActive = currentState == .running || currentState == .paused
+
         currentState = .idle
         stopTimer()
         remainingSeconds = 0
@@ -223,17 +243,21 @@ final class TimerViewModel: ObservableObject {
 
         triggerHaptic(.warning)
 
-        // End Live Activity
-        Task {
-            await activityManager.endLiveActivity()
+        if wasActive {
+            analytics.capture(.timerReset)
         }
 
-        notificationManager.cancelAllTimerNotifications()
+        Task {
+            await activityManager.endLiveActivity()
+            await notificationManager.cancelAllTimerNotifications()
+        }
     }
 
     // Skip to break (when in focus session)
     func skipToBreak() {
         guard currentSessionType == .focus else { return }
+
+        analytics.capture(.breakSkipped)
 
         // Save the incomplete session if desired
         completeCurrentSession()
@@ -285,6 +309,11 @@ final class TimerViewModel: ObservableObject {
     private func timerCompleted() {
         currentState = .completed
         stopTimer()
+
+        analytics.capture(.timerCompleted(
+            sessionType: currentSessionType.rawValue,
+            durationSeconds: totalSeconds
+        ))
 
         // Save completed session
         completeCurrentSession()

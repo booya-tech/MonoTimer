@@ -10,6 +10,8 @@ import SwiftUI
 struct DashboardView: View {
     @StateObject private var viewModel: DashboardViewModel
     @EnvironmentObject var timerViewModel: TimerViewModel
+    @EnvironmentObject var preferences: AppPreferences
+    @State private var showPaywall = false
 
     init() {
         _viewModel = StateObject(wrappedValue: DashboardViewModel())
@@ -25,6 +27,7 @@ struct DashboardView: View {
         }        
         .navigationTitle("Dashboard")
         .navigationBarTitleDisplayMode(.large)
+        .analyticsScreen(AppConstants.Analytics.Screen.dashboard)
         .onAppear() {
             updateStats()
         }
@@ -35,29 +38,84 @@ struct DashboardView: View {
 
     private var dashboardContent: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
+            VStack(spacing: 0) {
+                Spacer().frame(height: 16)
                 // Daily Goal Section
                 dailyGoalSection
 
+                Spacer().frame(height: 16)
                 // Stats Grid
                 statsGrid
-
-                // Period Selector
-                PeriodSelector(selectedPeriod: $viewModel.selectedPeriod)
-                    .onChange(of: viewModel.selectedPeriod) {
-                        viewModel.updatePeriodStats(with: timerViewModel.completedSessions)
+                
+                ZStack {
+                    VStack(spacing: 0) {
+                        Spacer().frame(height: 16)
+                        // Period Stats Section
+                        periodStatsSection
+                            .blur(radius: preferences.isPremiumUser ? 0 : 6)
+                            .allowsTightening(preferences.isPremiumUser)
+                        
+                        Spacer().frame(height: 16)
+                        // Period Selector
+                        PeriodSelector(selectedPeriod: $viewModel.selectedPeriod)
+                            .onChange(of: viewModel.selectedPeriod) {
+                                viewModel.resetPeriodNavigation()
+                                viewModel.updatePeriodStats(with: timerViewModel.completedSessions)
+                            }
+                            .blur(radius: preferences.isPremiumUser ? 0 : 6)
+                            .allowsTightening(preferences.isPremiumUser)
+                        
+                        Spacer().frame(height: 16)
+                        // Period Chart (week or year)
+                        WeeklyChart(
+                            data: viewModel.periodChartData,
+                            title: viewModel.periodChartTitle,
+                            canGoBack: viewModel.canGoBack,
+                            canGoForward: viewModel.canGoForward,
+                            onGoBack: { viewModel.goToPrevious() },
+                            onGoForward: { viewModel.goToNext() }
+                        )
+                        .blur(radius: preferences.isPremiumUser ? 0 : 6)
+                        .allowsHitTesting(preferences.isPremiumUser)
                     }
-
-                // Period Stats Section
-                periodStatsSection
-
-                // Weekly Chart
-                WeeklyChart(data: viewModel.periodChartData, title: viewModel.selectedPeriod.rawValue)
-
+                    if !preferences.isPremiumUser {
+                        unlockPremiumBtn
+                    }
+                }
+                
                 // Bottom padding
                 Spacer(minLength: 100)
             }
             .padding()
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(source: "dashboard")
+        }
+    }
+    
+    private var unlockPremiumBtn: some View {
+        Button {
+            showPaywall = true
+        } label: {
+            VStack(spacing: 8) {
+                Text(AppConstants.Icon.crownFill)
+                    .font(.title2)
+                Text("Unlock Charts")
+                    .font(AppTypography.caption)
+                    .fontWeight(.medium)
+            }
+            .foregroundColor(AppColors.primaryText)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(
+                Capsule()
+                    .fill(AppColors.secondaryBackground)
+                    .overlay(
+                        Capsule()
+                            .stroke(
+                                AppColors.secondaryText.opacity(0.3), lineWidth: 1)
+                    )
+            )
         }
     }
 

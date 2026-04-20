@@ -10,11 +10,12 @@ import SwiftUI
 struct PresetButton: View {
     let preset: TimerPreset
     let isSelected: Bool
+    let isHapticsEnabled: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: {
-            if AppPreferences.shared.isHapticsEnabled {
+            if isHapticsEnabled {
                 HapticManager.shared.light()
             }
             action()
@@ -37,6 +38,6 @@ struct PresetButton: View {
 }
 
 #Preview {
-    PresetButton(preset: TimerPreset.defaults[0], isSelected: false, action: {})
-    PresetButton(preset: TimerPreset.defaults[0], isSelected: true, action: {})
+    PresetButton(preset: TimerPreset.defaults[0], isSelected: false, isHapticsEnabled: true, action: {})
+    PresetButton(preset: TimerPreset.defaults[0], isSelected: true, isHapticsEnabled: true, action: {})
 }

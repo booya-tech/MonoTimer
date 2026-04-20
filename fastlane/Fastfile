@@ -11,6 +11,57 @@ platform :ios do
   PROJECT_NAME = "MonoTimer.xcodeproj"
   SCHEME_NAME = "MonoTimer"
   TARGET_NAME = "MonoTimer"
+  WIDGET_TARGET = "MonoTimerWidgetsExtension"
+  ALL_TARGETS = [TARGET_NAME, WIDGET_TARGET]
+
+  # ============================================
+  # HELPERS — Keep main app + widget extension versions in sync
+  # App Store Connect rejects builds where the widget's
+  # CFBundleShortVersionString does not match the app's (ITMS-90473).
+  # ============================================
+  def bump_marketing_version_all_targets(bump_type:)
+    increment_version_number_in_xcodeproj(
+      xcodeproj: PROJECT_NAME,
+      target: TARGET_NAME,
+      bump_type: bump_type
+    )
+
+    new_version = get_version_number(
+      xcodeproj: PROJECT_NAME,
+      target: TARGET_NAME
+    )
+
+    increment_version_number_in_xcodeproj(
+      xcodeproj: PROJECT_NAME,
+      target: WIDGET_TARGET,
+      version_number: new_version
+    )
+
+    UI.message("📌 Marketing version synced to #{new_version} for: #{ALL_TARGETS.join(', ')}")
+    new_version
+  end
+
+  def bump_build_number_all_targets
+    increment_build_number_in_xcodeproj(
+      xcodeproj: PROJECT_NAME,
+      target: TARGET_NAME
+    )
+
+    new_build = get_build_number_from_xcodeproj(
+      xcodeproj: PROJECT_NAME,
+      target: TARGET_NAME
+    )
+
+    increment_build_number_in_xcodeproj(
+      xcodeproj: PROJECT_NAME,
+      target: WIDGET_TARGET,
+      build_number: new_build
+    )
+
+    UI.message("📌 Build number synced to #{new_build} for: #{ALL_TARGETS.join(', ')}")
+    new_build
+  end
+
   
   # ============================================
   # BEFORE ALL LANES
@@ -90,18 +141,17 @@ platform :ios do
   # ============================================
   desc "Build and upload to TestFlight"
   lane :beta do
-    # Step 1: Increment build number
-    increment_build_number(
-      xcodeproj: PROJECT_NAME
-    )
-    
+    # Step 1: Increment build number for both app + widget (kept in sync)
+    bump_build_number_all_targets
+
     # Step 2: Get version info for logging
     version = get_version_number(
       xcodeproj: PROJECT_NAME,
       target: TARGET_NAME
     )
-    build_num = get_build_number(
-      xcodeproj: PROJECT_NAME
+    build_num = get_build_number_from_xcodeproj(
+      xcodeproj: PROJECT_NAME,
+      target: TARGET_NAME
     )
     
     puts "🚀 Preparing TestFlight build: #{version} (#{build_num})"
@@ -162,23 +212,18 @@ platform :ios do
   # ============================================
   desc "Submit to App Store for review"
   lane :release do
-    # Step 1: Increment version number
-    increment_version_number(
-      bump_type: "minor",  # Options: "major" (2.0.0), "minor" (1.1.0), "patch" (1.0.1)
-      xcodeproj: PROJECT_NAME
-    )
-    
-    increment_build_number(
-      xcodeproj: PROJECT_NAME
-    )
-    
+    # Step 1: Increment marketing + build for app AND widget (kept in sync)
+    bump_marketing_version_all_targets(bump_type: "minor") # "major" / "minor" / "patch"
+    bump_build_number_all_targets
+
     # Step 2: Get version info
     version = get_version_number(
       xcodeproj: PROJECT_NAME,
       target: TARGET_NAME
     )
-    build_num = get_build_number(
-      xcodeproj: PROJECT_NAME
+    build_num = get_build_number_from_xcodeproj(
+      xcodeproj: PROJECT_NAME,
+      target: TARGET_NAME
     )
     
     puts "🚀 Preparing App Store release: #{version} (#{build_num})"
@@ -220,14 +265,9 @@ platform :ios do
   # Purpose: Increment patch version (1.0.0 -> 1.0.1)
   # Usage: bundle exec fastlane bump_patch
   # ============================================
-  desc "Increment patch version number"
+  desc "Increment patch version number (app + widget)"
   lane :bump_patch do
-    increment_version_number(
-      bump_type: "patch",
-      xcodeproj: PROJECT_NAME
-    )
-    
-    version = get_version_number(xcodeproj: PROJECT_NAME, target: TARGET_NAME)
+    version = bump_marketing_version_all_targets(bump_type: "patch")
     puts "✅ Version bumped to #{version}"
   end
 
@@ -236,14 +276,9 @@ platform :ios do
   # Purpose: Increment minor version (1.0.0 -> 1.1.0)
   # Usage: bundle exec fastlane bump_minor
   # ============================================
-  desc "Increment minor version number"
+  desc "Increment minor version number (app + widget)"
   lane :bump_minor do
-    increment_version_number(
-      bump_type: "minor",
-      xcodeproj: PROJECT_NAME
-    )
-    
-    version = get_version_number(xcodeproj: PROJECT_NAME, target: TARGET_NAME)
+    version = bump_marketing_version_all_targets(bump_type: "minor")
     puts "✅ Version bumped to #{version}"
   end
 

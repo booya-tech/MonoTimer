@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject private var preferences = AppPreferences.shared
+    @EnvironmentObject private var preferences: AppPreferences
 
     var body: some View {
         List {
@@ -87,7 +87,21 @@ struct SettingsView: View {
                         .labelsHidden()
                 }
             }
-            
+
+            // MARK: - Privacy
+            Section("Privacy") {
+                HStack {
+                    SettingsRow(
+                        icon: "chart.bar.xaxis",
+                        title: "Share Usage Data",
+                        subtitle: "Help us improve MonoTimer with anonymous analytics"
+                    )
+                    Spacer()
+                    Toggle("", isOn: $preferences.isAnalyticsEnabled)
+                        .labelsHidden()
+                }
+            }
+
             // MARK: - Reset
             Section("Reset") {
                 Button {
@@ -102,12 +116,29 @@ struct SettingsView: View {
                     }
                 }
             }
+            
+            //MARK: - Toggle Premium (Debug Only)
+            #if DEBUG
+            Section("Premium") {
+                Button {
+                    preferences.togglePremiumUser()
+                    HapticManager.shared.light()
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.counterclockwise")
+                        Text("Toggle Premium")
+                    }
+                }
+            }
+            #endif
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .analyticsScreen(AppConstants.Analytics.Screen.settings)
     }
 }
 
 #Preview {
     SettingsView()
+        .environmentObject(AppPreferences.shared)
 }
