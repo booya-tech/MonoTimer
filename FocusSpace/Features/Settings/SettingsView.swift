@@ -94,7 +94,7 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "chart.bar.xaxis",
                         title: "Share Usage Data",
-                        subtitle: "Help improve MonoTimer with anonymous analytics"
+                        subtitle: "Help us improve MonoTimer with anonymous analytics"
                     )
                     Spacer()
                     Toggle("", isOn: $preferences.isAnalyticsEnabled)
