@@ -1,6 +1,6 @@
 # Terms of Service for MonoTimer
 
-**Last Updated: January 18, 2025**
+**Last Updated: April 20, 2026**
 
 ## Acceptance of Terms
 
@@ -23,6 +23,33 @@ You agree NOT to:
 - Attempt to reverse engineer, hack, or exploit the App
 - Upload malicious code or interfere with the App's functionality
 - Violate any applicable laws or regulations
+
+## Subscriptions and In-App Purchases
+
+MonoTimer offers an optional auto-renewable subscription, **MonoTimer Premium**, with the following plans:
+
+- **Premium Monthly**: $0.99 USD per month
+- **Premium Yearly**: $9.99 USD per year
+
+Prices may vary by region and are displayed in your local currency on the App Store. All purchases are processed by Apple through the App Store.
+
+### Auto-Renewal
+
+- Payment will be charged to your Apple ID account upon confirmation of purchase.
+- Your subscription automatically renews at the same price and for the same duration unless canceled at least 24 hours before the end of the current billing period.
+- Your Apple ID account will be charged for renewal within 24 hours prior to the end of the current period.
+
+### Managing and Canceling Your Subscription
+
+You can manage or cancel your subscription at any time through your iOS Settings under **Apple ID → Subscriptions**, or at [https://apps.apple.com/account/subscriptions](https://apps.apple.com/account/subscriptions). Cancellation takes effect at the end of the current billing period — you will retain Premium access until then.
+
+### Refunds
+
+All refund requests are handled by Apple. To request a refund, visit [https://reportaproblem.apple.com](https://reportaproblem.apple.com) and select the MonoTimer subscription. We do not process refunds directly.
+
+### Subscription Changes
+
+We reserve the right to change subscription prices, plans, or available features. Any price changes will take effect at the next renewal and will be communicated in advance in accordance with Apple's App Store policies.
 
 ## Data and Privacy
 

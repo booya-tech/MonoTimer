@@ -5,7 +5,6 @@ A minimalist, black-and-white Pomodoro productivity app for iOS built with Swift
 ## Table of Contents
 
 - [Features](#features)
-- [Screenshots](#screenshots)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -43,13 +42,6 @@ A minimalist, black-and-white Pomodoro productivity app for iOS built with Swift
 - **Sign in with Apple**: Secure authentication through Apple ID
 - **User Preferences**: Customizable timer settings, goals, and notifications
 - **Profile Management**: User profile with session statistics
-
-## Screenshots
-
-| Timer Interface | Strict Mode | Dashboard |
-|:---:|:---:|:---:|
-| <img src="screenshots/timer-idle.png" width="250"> | <img src="screenshots/strict-mode.png" width="250"> | <img src="screenshots/dashboard.png" width="250"> |
-| Main timer with presets | Strict mode for deep focus | Daily/weekly statistics |
 
 ## Requirements
 

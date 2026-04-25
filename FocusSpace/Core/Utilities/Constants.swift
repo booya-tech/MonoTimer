@@ -40,8 +40,8 @@ enum AppConstants {
     // MARK: - URLs
     enum URLs {
         static let github = "https://github.com/booya-tech/MonoTimer"
-        static let privacyPolicy = "https://github.com/booya-tech/MonoTimer/blob/main/docs/privacy-policy.md"
-        static let termsOfService = "https://github.com/booya-tech/MonoTimer/blob/main/docs/terms-of-service.md"
+        static let privacyPolicy = "https://booya-pannachai.notion.site/Privacy-Policy-for-MonoTimer-34be6eb508b080ef8103f1343b726928?source=copy_link"
+        static let termsOfService = "https://booya-pannachai.notion.site/Terms-of-Service-for-MonoTimer-34be6eb508b080c08b19c300669639e1?source=copy_link"
 
         static let privacyPolicyURL = URL(string: privacyPolicy)!
         static let termsOfServiceURL = URL(string: termsOfService)!
