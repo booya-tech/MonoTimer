@@ -42,6 +42,7 @@ struct GoogleAuthButtonView: View {
             )
         }
         .disabled(isLoading)
+        .opacity(isLoading ? 0.6 : 1.0)
         .accessibilityLabel("Continue with Google")
     }
 

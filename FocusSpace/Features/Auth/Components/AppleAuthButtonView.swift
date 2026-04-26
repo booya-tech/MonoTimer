@@ -9,21 +9,26 @@ import SwiftUI
 import AuthenticationServices
 
 struct AppleAuthButtonView: View {
+    var isLoading: Bool = false
+    let onRequest: (ASAuthorizationAppleIDRequest) -> Void
     let onCompletion: (Result<ASAuthorization, Error>) -> Void
 
     var body: some View {
         SignInWithAppleButton(
             .signIn,
-            onRequest: { request in
-                request.requestedScopes = [.fullName, .email]
-            },
+            onRequest: onRequest,
             onCompletion: onCompletion
         )
         .frame(height: 50)
         .cornerRadius(8)
+        .disabled(isLoading)
+        .opacity(isLoading ? 0.6 : 1.0)
     }
 }
 
 #Preview {
-    AppleAuthButtonView(onCompletion: { _ in })
+    AppleAuthButtonView(
+        onRequest: { _ in },
+        onCompletion: { _ in }
+    )
 }

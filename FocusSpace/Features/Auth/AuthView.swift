@@ -34,11 +34,15 @@ struct AuthView: View {
                 VStack(spacing: 12) {
                     customDivider
 
-                    AppleAuthButtonView { result in
-                        Task {
-                            await viewModel.handleAppleSignIn(result)
+                    AppleAuthButtonView(
+                        isLoading: viewModel.isLoading,
+                        onRequest: viewModel.configureAppleRequest,
+                        onCompletion: { result in
+                            Task {
+                                await viewModel.handleAppleSignIn(result)
+                            }
                         }
-                    }
+                    )
 
                     GoogleAuthButtonView(isLoading: viewModel.isLoading) {
                         Task { await viewModel.signInWithGoogle() }
