@@ -18,6 +18,8 @@
 		C0BDD4FA2E76CFA500E69A6B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BDD4F92E76CFA500E69A6B /* WidgetKit.framework */; };
 		C0BDD4FC2E76CFA500E69A6B /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BDD4FB2E76CFA500E69A6B /* SwiftUI.framework */; };
 		C0BDD50D2E76CFA700E69A6B /* MonoTimerWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C0BDD4F72E76CFA500E69A6B /* MonoTimerWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C0BF35862F9CC7DE007CCD8F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C0BF35852F9CC7DE007CCD8F /* GoogleSignIn */; };
+		C0BF35882F9CC7DE007CCD8F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C0BF35872F9CC7DE007CCD8F /* GoogleSignInSwift */; };
 		C0CAEB8C2E5B0D280035D5D1 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = C0CAEB8B2E5B0D280035D5D1 /* Auth */; };
 		C0CAEB8E2E5B0D280035D5D1 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C0CAEB8D2E5B0D280035D5D1 /* Supabase */; };
 /* End PBXBuildFile section */
@@ -148,8 +150,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0BF35862F9CC7DE007CCD8F /* GoogleSignIn in Frameworks */,
 				C0ACAB732F8E0CE700E88D1C /* StoreKit.framework in Frameworks */,
 				C0CAEB8E2E5B0D280035D5D1 /* Supabase in Frameworks */,
+				C0BF35882F9CC7DE007CCD8F /* GoogleSignInSwift in Frameworks */,
 				C0CAEB8C2E5B0D280035D5D1 /* Auth in Frameworks */,
 				C0AD9D7E2F94D8B500A13B52 /* PostHog in Frameworks */,
 			);
@@ -262,6 +266,8 @@
 				C0CAEB8B2E5B0D280035D5D1 /* Auth */,
 				C0CAEB8D2E5B0D280035D5D1 /* Supabase */,
 				C0AD9D7D2F94D8B500A13B52 /* PostHog */,
+				C0BF35852F9CC7DE007CCD8F /* GoogleSignIn */,
+				C0BF35872F9CC7DE007CCD8F /* GoogleSignInSwift */,
 			);
 			productName = FocusSpace;
 			productReference = C0CAEB462E58B8020035D5D1 /* MonoTimer.app */;
@@ -347,6 +353,7 @@
 			packageReferences = (
 				C0CAEB8A2E5B0D280035D5D1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				C0AD9D7C2F94D8B500A13B52 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+				C0BF35842F9CC7DE007CCD8F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C0CAEB472E58B8020035D5D1 /* Products */;
@@ -856,6 +863,14 @@
 				minimumVersion = 3.54.0;
 			};
 		};
+		C0BF35842F9CC7DE007CCD8F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
 		C0CAEB8A2E5B0D280035D5D1 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift";
@@ -871,6 +886,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C0AD9D7C2F94D8B500A13B52 /* XCRemoteSwiftPackageReference "posthog-ios" */;
 			productName = PostHog;
+		};
+		C0BF35852F9CC7DE007CCD8F /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0BF35842F9CC7DE007CCD8F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		C0BF35872F9CC7DE007CCD8F /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0BF35842F9CC7DE007CCD8F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
 		};
 		C0CAEB8B2E5B0D280035D5D1 /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
