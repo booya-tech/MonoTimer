@@ -20,11 +20,16 @@ final class AuthService: ObservableObject {
 
     private var supabase: SupabaseClient? { SupabaseManager.shared.client }
     private var appleSignInCoordinator: AppleSignInCoordinator?
-    // Check if user signed in with Apple
-    var isAppleUser: Bool {
-        guard let user = currentUser else { return false }
 
-        return user.appMetadata["provider"] == "apple"
+    // True for any third-party OAuth provider (Apple, Google, ...).
+    // Used to skip password-based re-auth flows.
+    var isOAuthUser: Bool {
+        guard let provider = currentUser?.appMetadata["provider"]?.stringValue else { return false }
+        return provider == "apple" || provider == "google"
+    }
+
+    var isAppleUser: Bool {
+        currentUser?.appMetadata["provider"]?.stringValue == "apple"
     }
     
     init() {
@@ -95,6 +100,24 @@ final class AuthService: ObservableObject {
             credentials: .init(
                 provider: .apple,
                 idToken: idToken
+            )
+        )
+
+        currentUser = response.user
+    }
+
+    // Sign in with Google via Supabase using a native ID token from GoogleSignIn-iOS
+    func signInWithGoogle(idToken: String, accessToken: String) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        let response = try await supabase.auth.signInWithIdToken(
+            credentials: .init(
+                provider: .google,
+                idToken: idToken,
+                accessToken: accessToken
             )
         )
 

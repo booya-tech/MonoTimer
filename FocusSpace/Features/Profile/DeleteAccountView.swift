@@ -58,7 +58,7 @@ struct DeleteAccountView: View {
                 .padding(.horizontal)
                 
                 // Password Confirmation
-                if !authService.isAppleUser {
+                if !authService.isOAuthUser {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Confirm Your Password")
                             .font(AppTypography.callout)
@@ -113,8 +113,8 @@ struct DeleteAccountView: View {
                                 .fill(Color.red)
                         )
                     }
-                    .disabled(viewModel.isDeleting || (!authService.isAppleUser && viewModel.password.isEmpty))
-                    .opacity(!authService.isAppleUser && viewModel.password.isEmpty ? 0.5 : 1.0)
+                    .disabled(viewModel.isDeleting || (!authService.isOAuthUser && viewModel.password.isEmpty))
+                    .opacity(!authService.isOAuthUser && viewModel.password.isEmpty ? 0.5 : 1.0)
                 }
                 .padding(.horizontal)
                 .padding(.top, 24)

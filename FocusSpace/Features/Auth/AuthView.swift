@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AuthenticationServices
 
 struct AuthView: View {
     @StateObject private var viewModel: AuthViewModel
@@ -35,18 +34,15 @@ struct AuthView: View {
                 VStack(spacing: 12) {
                     customDivider
 
-                    SignInWithAppleButton(
-                        .signIn,
-                        onRequest: { request in
-                            request.requestedScopes = [.fullName, .email]
-                        }, onCompletion: { result in
-                            Task {
-                                await viewModel.handleAppleSignIn(result)
-                            }
+                    AppleAuthButtonView { result in
+                        Task {
+                            await viewModel.handleAppleSignIn(result)
                         }
-                    )
-                    .frame(height: 50)
-                    .cornerRadius(8)
+                    }
+
+                    GoogleAuthButtonView(isLoading: viewModel.isLoading) {
+                        Task { await viewModel.signInWithGoogle() }
+                    }
 
                     primaryButton
                 }
