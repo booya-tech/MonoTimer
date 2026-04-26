@@ -71,6 +71,8 @@ jobs:
           
           SUPABASE_URL = ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY = ${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_CLIENT_ID = ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_REVERSED_CLIENT_ID = ${{ secrets.GOOGLE_REVERSED_CLIENT_ID }}
           EOF
       
       - name: Create API Key file

@@ -24,7 +24,7 @@
 public enum AppAsset {
     // MARK: Icons (ic_)
     public enum Icon {
-        // Add ic_ assets here
+        public static let googleLogo = "ic_google_logo"
     }
 
     // MARK: Images (img_)

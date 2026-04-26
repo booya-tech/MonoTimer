@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import GoogleSignIn
 
 @main
 struct FocusSpaceApp: App {
@@ -27,6 +28,9 @@ struct FocusSpaceApp: App {
                 .environmentObject(AppPreferences.shared)
                 .environmentObject(storeKitManager)
                 .environment(\.analytics, AnalyticsBootstrap.shared)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

@@ -31,6 +31,7 @@ struct PrimaryButton: View {
                         )
                 )
         }
+        .frame(maxWidth: .infinity)
         .frame(height: 50)
         .buttonStyle(PlainButtonStyle())
 

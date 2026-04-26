@@ -24,7 +24,7 @@ final class DeleteAccountViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            if !authService.isAppleUser {
+            if !authService.isOAuthUser {
                 guard !password.isEmpty else {
                     errorMessage = "Please enter your password"
                     return
