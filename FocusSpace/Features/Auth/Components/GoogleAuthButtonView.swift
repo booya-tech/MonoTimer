@@ -31,7 +31,8 @@ struct GoogleAuthButtonView: View {
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(textColor)
             }
-            .frame(maxWidth: .infinity, minHeight: 50)
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
             .background(
                 RoundedRectangle(cornerRadius: 8)
                     .fill(backgroundColor)
