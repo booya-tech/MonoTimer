@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AuthenticationServices
 
 struct AuthView: View {
     @StateObject private var viewModel: AuthViewModel
@@ -24,36 +23,44 @@ struct AuthView: View {
                     hideKeyboard()
                 }
 
-            VStack(spacing: 32) {
+            VStack(spacing: 0) {
+                Spacer().frame(height: 32)
                 // Header
                 appHeader
-
+                
+                Spacer().frame(height: 32)
                 // Email & Password Fields
                 emailAndPasswordFields
-
+                
+                Spacer().frame(height: 32)
                 // Apple Sign-in and Normal Sign-in Buttons
-                VStack(spacing: 12) {
+                VStack(spacing: 0) {
+                    Spacer().frame(height: 8)
                     customDivider
-
-                    SignInWithAppleButton(
-                        .signIn,
-                        onRequest: { request in
-                            request.requestedScopes = [.fullName, .email]
-                        }, onCompletion: { result in
+                    
+                    Spacer().frame(height: 8)
+                    AppleAuthButtonView(
+                        isLoading: viewModel.isLoading,
+                        onRequest: viewModel.configureAppleRequest,
+                        onCompletion: { result in
                             Task {
                                 await viewModel.handleAppleSignIn(result)
                             }
                         }
                     )
-                    .frame(height: 50)
-                    .cornerRadius(8)
 
+                    Spacer().frame(height: 8)
+                    GoogleAuthButtonView(isLoading: viewModel.isLoading) {
+                        Task { await viewModel.signInWithGoogle() }
+                    }
+
+                    Spacer().frame(height: 16)
                     primaryButton
                 }
 
                 Spacer()
             }
-            .padding()
+            .padding(.horizontal, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .analyticsScreen(AppConstants.Analytics.Screen.auth)
@@ -131,6 +138,7 @@ struct AuthView: View {
         }
         .disabled(viewModel.isLoading)
 
+        Spacer().frame(height: 8)
         Button(action: viewModel.toggleMode) {
             Text(viewModel.isSignUpMode ? "Already have an account? Sign In" : "Don't have an account?  Sign Up")
                 .font(AppTypography.caption)

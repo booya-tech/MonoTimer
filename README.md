@@ -120,7 +120,10 @@ A minimalist, black-and-white Pomodoro productivity app for iOS built with Swift
    ```
    SUPABASE_URL = https://your-project.supabase.co
    SUPABASE_ANON_KEY = your_public_anon_key
+   GOOGLE_CLIENT_ID = 1234567890-abcdef.apps.googleusercontent.com
+   GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.1234567890-abcdef
    ```
+   Get the Google values from Google Cloud Console -> Credentials -> iOS OAuth Client ID.
 
 5. **Xcode Configuration**:
    - Target → Build Settings → Base Configuration
