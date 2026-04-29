@@ -36,10 +36,22 @@ struct FocusSpaceWidgetsLiveActivity: Widget {
                 }
                 
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(timerInterval: Date()...context.state.endTime, countsDown: true)
-                        .font(.title)
-                        .fontWeight(.semibold)
-                        .monospacedDigit()
+                    // `Date()...endTime` would trap once the timer ends and
+                    // the system re-renders during the 5s dismissal tail
+                    // (lowerBound > upperBound). Gate on `isRunning` to fall
+                    // back to a static label, and clamp the upper bound as a
+                    // defensive guard against late re-renders.
+                    if context.state.isRunning {
+                        Text(timerInterval: Date()...max(Date(), context.state.endTime), countsDown: true)
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .monospacedDigit()
+                    } else {
+                        Text(context.state.timeDisplay)
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .monospacedDigit()
+                    }
                 }
             } compactLeading: {
                 // Compact leading (left side of notch) - main timer display
@@ -48,10 +60,17 @@ struct FocusSpaceWidgetsLiveActivity: Widget {
                     .frame(width: 16, height: 16)
             } compactTrailing: {
                 // Compact trailing (right side of notch) - time display
-                 Text(timerInterval: Date()...context.state.endTime, countsDown: true)
-                    .font(.caption2)
-                    .monospacedDigit()
-                    .frame(width: 40)
+                if context.state.isRunning {
+                    Text(timerInterval: Date()...max(Date(), context.state.endTime), countsDown: true)
+                        .font(.caption2)
+                        .monospacedDigit()
+                        .frame(width: 40)
+                } else {
+                    Text(context.state.timeDisplay)
+                        .font(.caption2)
+                        .monospacedDigit()
+                        .frame(width: 40)
+                }
             } minimal: {
                 // Minimal state (when another activity takes priority)
                 Circle()

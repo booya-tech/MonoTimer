@@ -29,7 +29,10 @@ struct LockScreenLiveActivityView: View {
                 Spacer()
 
                 if context.state.isRunning {
-                    Text(timerInterval: Date()...context.state.endTime, countsDown: true)
+                    // Clamp the upper bound: ClosedRange traps when
+                    // `Date() > endTime`, which can happen if the system
+                    // re-renders just after the timer hits zero.
+                    Text(timerInterval: Date()...max(Date(), context.state.endTime), countsDown: true)
                         .font(.title2)
                         .fontWeight(.semibold)
                         .monospacedDigit()
