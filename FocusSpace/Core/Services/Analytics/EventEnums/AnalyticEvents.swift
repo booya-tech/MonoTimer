@@ -35,6 +35,11 @@ enum AnalyticsEvent {
 
     // Settings
     case settingChanged(key: String, value: String)
+
+    // Onboarding
+    case onboardingStarted
+    case onboardingStepCompleted(step: String)
+    case onboardingCompleted(focusLengthMinutes: Int, dailyGoalMinutes: Int, notificationsEnabled: Bool)
 }
 
 extension AnalyticsEvent {
@@ -58,6 +63,9 @@ extension AnalyticsEvent {
         case .purchaseRestored: return "purchase_restored"
         case .subscriptionRenewed: return "subscription_renewed"
         case .settingChanged: return "setting_changed"
+        case .onboardingStarted: return "onboarding_started"
+        case .onboardingStepCompleted: return "onboarding_step_completed"
+        case .onboardingCompleted: return "onboarding_completed"
         }
     }
 
@@ -65,7 +73,7 @@ extension AnalyticsEvent {
     var properties: [String: Any]? {
         switch self {
         case .appLaunched, .authSignedOut, .timerResumed, .timerReset,
-             .breakSkipped, .paywallDismissed:
+             .breakSkipped, .paywallDismissed, .onboardingStarted:
             return nil
 
         case .authSignedIn(let method):
@@ -101,6 +109,16 @@ extension AnalyticsEvent {
 
         case .settingChanged(let key, let value):
             return ["key": key, "value": value]
+
+        case .onboardingStepCompleted(let step):
+            return ["step": step]
+
+        case .onboardingCompleted(let focusLengthMinutes, let dailyGoalMinutes, let notificationsEnabled):
+            return [
+                "focus_length_minutes": focusLengthMinutes,
+                "daily_goal_minutes": dailyGoalMinutes,
+                "notifications_enabled": notificationsEnabled
+            ]
         }
     }
 }

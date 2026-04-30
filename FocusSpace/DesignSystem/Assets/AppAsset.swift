@@ -29,7 +29,7 @@ public enum AppAsset {
 
     // MARK: Images (img_)
     public enum Image {
-        // Add img_ assets here
+        public static let onboardingGhost = "img_onboarding_ghost"
     }
 
     // MARK: Backgrounds (bg_)

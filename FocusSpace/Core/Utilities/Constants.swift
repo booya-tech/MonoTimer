@@ -59,6 +59,13 @@ enum AppConstants {
     enum Goals {
         static let defaultDailyGoal = 120 // minutes
     }
+
+    // MARK: - Onboarding
+    enum Onboarding {
+        static let currentVersion = 1
+        static let focusLengthChoices = [25, 30, 45, 50]
+        static let dailyGoalChoices = [30, 60, 120, 180]
+    }
     
     // MARK: - UI
     enum UI {
@@ -68,6 +75,7 @@ enum AppConstants {
         static let largePadding: CGFloat = 24
         static let mediumPadding: CGFloat = 16
         static let smallPadding: CGFloat = 8
+        static let onboardingHeroSize: CGFloat = 220
     }
     
     enum Premium {
@@ -130,6 +138,7 @@ enum AppConstants {
             static let settings = "Settings"
             static let auth = "Auth"
             static let paywall = "Paywall"
+            static let onboarding = "Onboarding"
         }
     }
 }
