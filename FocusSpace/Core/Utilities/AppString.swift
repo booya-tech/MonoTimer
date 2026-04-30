@@ -87,4 +87,22 @@ enum AppString {
     static let paywallTerms = "Terms"
     static let paywallPrivacy = "Privacy"
     static let paywallSeparator = "|"
+
+    // Onboarding
+    static let onboardingGetStarted = "Get Started"
+    static let onboardingContinue = "Continue"
+    static let onboardingNotNow = "Not now"
+    static let onboardingEnableNotifications = "Enable Notifications"
+
+    static let onboardingWelcomeTitle = "Focus in monochrome."
+    static let onboardingWelcomeSubtitle = "Distraction-free focus sessions, your way."
+
+    static let onboardingFocusLengthTitle = "How long do you usually focus?"
+    static let onboardingFocusLengthSubtitle = "You can change this anytime in Settings."
+
+    static let onboardingDailyGoalTitle = "What's your daily focus goal?"
+    static let onboardingDailyGoalSubtitle = "We'll track your progress on the dashboard."
+
+    static let onboardingNotificationsTitle = "Stay on track."
+    static let onboardingNotificationsSubtitle = "Get notified when sessions and breaks end."
 }
