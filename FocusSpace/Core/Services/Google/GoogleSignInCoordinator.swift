@@ -21,6 +21,7 @@ final class GoogleSignInCoordinator {
     enum CoordinatorError: Error {
         case noPresentingViewController
         case missingIDToken
+        case missingClientID
     }
 
     /// Presents the native Google sign-in sheet and returns the resulting tokens.
@@ -28,6 +29,15 @@ final class GoogleSignInCoordinator {
     ///   must later be sent to Supabase so it can verify the ID token's `nonce`
     ///   claim.
     func signIn(hashedNonce: String) async throws -> Tokens {
+        // GIDSignIn auto-loads its config from the `GIDClientID` Info.plist key
+        // and raises an uncatchable NSInvalidArgumentException if the value is
+        // missing or empty. Surface this as a Swift error so a misconfigured
+        // build doesn't crash the app on the first tap.
+        let clientID = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String ?? ""
+        guard !clientID.isEmpty else {
+            throw CoordinatorError.missingClientID
+        }
+
         guard let presenter = Self.topViewController() else {
             throw CoordinatorError.noPresentingViewController
         }

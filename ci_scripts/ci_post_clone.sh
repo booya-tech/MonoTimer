@@ -1,7 +1,15 @@
 #!/bin/sh
+set -eu
 
 # Go to repository root (Xcode Cloud provides this)
 cd "${CI_PRIMARY_REPOSITORY_PATH}"
+
+# Fail fast if required Google sign-in secrets are missing in the Xcode Cloud
+# workflow env. Without these, $(GIDClientID) in Info.plist resolves to an
+# empty string and the app crashes with NSInvalidArgumentException the first
+# time a user taps "Continue with Google" (see GIDSignIn signInWithOptions:).
+: "${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is not set in the Xcode Cloud workflow environment}"
+: "${GOOGLE_REVERSED_CLIENT_ID:?GOOGLE_REVERSED_CLIENT_ID is not set in the Xcode Cloud workflow environment}"
 
 # Create Config directory at repository root
 mkdir -p Config
