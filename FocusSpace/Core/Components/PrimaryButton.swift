@@ -19,15 +19,15 @@ struct PrimaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(AppTypography.buttonText)
-                .foregroundColor(isDestructive ? AppColors.background : AppColors.primaryText)
+                .foregroundColor(isDestructive ? AppColors.primaryText : AppColors.primaryRevert)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(isDestructive ? AppColors.primaryText : AppColors.background)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isDestructive ? AppColors.primaryRevert : AppColors.primaryText)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(AppColors.primaryText, lineWidth: 1)
+                                .stroke(isDestructive ? AppColors.primaryText : .clear, lineWidth: 1)
                         )
                 )
         }
@@ -41,7 +41,6 @@ struct PrimaryButton: View {
 #Preview {
     VStack(spacing: 16) {
         PrimaryButton(title: "Start Timer") {}
-        PrimaryButton(title: "Stop Timer", isDestructive: true) {}
     }
     .padding()
 }
