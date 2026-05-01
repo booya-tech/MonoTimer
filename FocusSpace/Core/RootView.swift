@@ -20,6 +20,8 @@ struct RootView: View {
         Group {
             if appViewModel.isLoading {
               SplashScreenView()
+            } else if !preferences.hasCompletedOnboarding {
+                OnboardingView()
             } else if appViewModel.isAuthenticated {
                 // display MainTabView
                 MainTabView()
@@ -30,6 +32,7 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: appViewModel.isLoading)
+        .animation(.easeInOut(duration: 0.3), value: preferences.hasCompletedOnboarding)
         .animation(.easeInOut(duration: 0.3), value: appViewModel.authService.currentUser != nil)
         .onChange(of: scenePhase) { (_, newPhase) in
             if newPhase == .active {
