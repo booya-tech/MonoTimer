@@ -70,7 +70,8 @@ final class SessionTagStore: ObservableObject {
 
     // MARK: - Mutations (sync API for picker)
 
-    func create(name: String) throws {
+    @discardableResult
+    func create(name: String) throws -> SessionTag {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw SessionTagError.emptyName }
         guard trimmed.count <= SessionTag.maxNameLength else { throw SessionTagError.nameTooLong }
@@ -85,6 +86,7 @@ final class SessionTagStore: ObservableObject {
             do { try await sync.saveTag(tag) }
             catch { Logger.log("Failed to save created tag '\(tag.name)': \(error)") }
         }
+        return tag
     }
 
     func rename(id: UUID, to newName: String) throws {

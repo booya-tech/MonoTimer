@@ -23,6 +23,8 @@ struct TagPickerSheet: View {
 
     @FocusState private var focusedField: Field?
 
+    private let analytics: AnalyticsService = AnalyticsBootstrap.shared
+
     private var shouldShowUpgradeRow: Bool {
         !preferences.isPremiumUser && !store.canCreateMore
     }
@@ -67,6 +69,14 @@ struct TagPickerSheet: View {
         .presentationDetents([.medium, .large])
         .sheet(isPresented: $showPaywall) {
             PaywallView(source: "tag_picker")
+        }
+        .task {
+            if shouldShowUpgradeRow {
+                analytics.capture(.tagLimitReached(
+                    limit: store.customLimit,
+                    isPremium: preferences.isPremiumUser
+                ))
+            }
         }
     }
 
@@ -129,6 +139,10 @@ struct TagPickerSheet: View {
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 if !tag.isDefault {
                     Button(role: .destructive) {
+                        analytics.capture(.tagDeleted(
+                            tagId: tag.id.uuidString,
+                            customCount: store.customTags.count - 1
+                        ))
                         store.delete(id: tag.id)
                     } label: {
                         Label(AppConstants.Tag.delete, systemImage: AppConstants.Icon.trash)
@@ -166,6 +180,7 @@ struct TagPickerSheet: View {
                 }
             } else if shouldShowUpgradeRow {
                 Button {
+                    analytics.capture(.tagUpgradeTapped)
                     showPaywall = true
                 } label: {
                     HStack {
@@ -203,6 +218,10 @@ struct TagPickerSheet: View {
     // MARK: - Actions
 
     private func selectAndDismiss(_ tag: SessionTag) {
+        analytics.capture(.tagSelected(
+            tagId: tag.id.uuidString,
+            isDefault: tag.isDefault
+        ))
         store.selectedTagId = tag.id
         dismiss()
     }
@@ -225,6 +244,7 @@ struct TagPickerSheet: View {
     private func commitRename(for id: UUID) {
         do {
             try store.rename(id: id, to: draftName)
+            analytics.capture(.tagRenamed(tagId: id.uuidString))
             cancelEditing()
         } catch {
             errorMessage = error.localizedDescription
@@ -248,7 +268,11 @@ struct TagPickerSheet: View {
 
     private func commitCreate() {
         do {
-            try store.create(name: newTagName)
+            let tag = try store.create(name: newTagName)
+            analytics.capture(.tagCreated(
+                tagId: tag.id.uuidString,
+                customCount: store.customTags.count
+            ))
             cancelCreate()
         } catch {
             errorMessage = error.localizedDescription

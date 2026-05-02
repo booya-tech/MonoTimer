@@ -13,8 +13,11 @@ struct TagFloatingButton: View {
     @ObservedObject private var store = SessionTagStore.shared
     @State private var showPicker = false
 
+    private let analytics: AnalyticsService = AnalyticsBootstrap.shared
+
     var body: some View {
         Button {
+            analytics.capture(.tagPickerOpened(source: "floating_button"))
             showPicker = true
         } label: {
             content
