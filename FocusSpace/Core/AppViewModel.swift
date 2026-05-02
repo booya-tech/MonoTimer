@@ -54,6 +54,9 @@ final class AppViewModel: NSObject,ObservableObject {
                 guard let self else { return }
                 if let user {
                     self.identifyIfNeeded(user)
+                    // Sync tags for the signed-in user (also seeds defaults
+                    // on first sign-in). Fire-and-forget; failures are logged.
+                    Task { await SessionTagStore.shared.syncNow() }
                 } else if self.lastIdentifiedUserId != nil {
                     self.analytics.capture(.authSignedOut)
                     self.analytics.reset()

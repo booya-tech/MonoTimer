@@ -19,23 +19,7 @@ struct SessionTag: Identifiable, Hashable, Codable {
 extension SessionTag {
     static let maxNameLength = 10
 
-    // Fixed UUIDs so default tags resolve identically across installs and
-    // devices. Never change these once shipped.
-    static let defaults: [SessionTag] = [
-        SessionTag(
-            id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
-            name: "Study",
-            isDefault: true
-        ),
-        SessionTag(
-            id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
-            name: "Work",
-            isDefault: true
-        ),
-        SessionTag(
-            id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
-            name: "Coding",
-            isDefault: true
-        ),
-    ]
+    /// Names of the tags seeded for every user on first sync.
+    /// IDs are assigned by the database (one row per user).
+    static let defaultNames: [String] = ["Study", "Work", "Coding"]
 }

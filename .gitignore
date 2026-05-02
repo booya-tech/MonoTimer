@@ -89,3 +89,5 @@ playground.xcworkspace
 *.swo
 *~.nib
 .cursor/commands/
+
+.cursor/
