@@ -50,6 +50,18 @@ struct CircleTimerView: View {
                 Text("focus")
                     .font(.system(size: 18, weight: .light))
                     .foregroundColor(AppColors.primaryRevert)
+
+                // Floating tag control: leading edge pinned to the
+                // top-right of the circle so the bubble grows rightward
+                // as the tag text gets longer.
+                TagFloatingButton()
+                    .alignmentGuide(.trailing) { d in d[.leading] }
+                    .frame(
+                        width: AppConstants.UI.circleFrameSize,
+                        height: AppConstants.UI.circleFrameSize,
+                        alignment: .topTrailing
+                    )
+                    .offset(x: -40, y: -22)
             }
             
             // Time display
