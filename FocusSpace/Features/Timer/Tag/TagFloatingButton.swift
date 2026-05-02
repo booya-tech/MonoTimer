@@ -20,7 +20,7 @@ struct TagFloatingButton: View {
             content
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(store.selectedTag?.name ?? "Add tag")
+        .accessibilityLabel(store.selectedTag?.name ?? AppConstants.Tag.addTagAccessibility)
         .sheet(isPresented: $showPicker) {
             TagPickerSheet()
         }
@@ -39,7 +39,7 @@ struct TagFloatingButton: View {
                     .foregroundColor(.white)
             }
         } else {
-            Image(systemName: "plus")
+            Image(systemName: AppConstants.Icon.plus)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(AppColors.primaryText)
                 .frame(width: 36, height: 36)

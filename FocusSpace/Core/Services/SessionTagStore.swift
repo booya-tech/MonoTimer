@@ -11,13 +11,20 @@
 //  fires in the background.
 //
 
+import Combine
 import Foundation
 
 @MainActor
 final class SessionTagStore: ObservableObject {
     static let shared = SessionTagStore()
 
-    nonisolated static let customLimit = 3
+    /// Per-user limit on custom (non-default) tags. Premium users get a
+    /// higher cap. Re-evaluated whenever `AppPreferences.isPremiumUser` flips.
+    var customLimit: Int {
+        AppPreferences.shared.isPremiumUser
+            ? AppConstants.Premium.premiumCustomTagLimit
+            : AppConstants.Premium.freeCustomTagLimit
+    }
 
     @Published private(set) var allTags: [SessionTag] = []
     @Published var selectedTagId: UUID? {
@@ -30,6 +37,7 @@ final class SessionTagStore: ObservableObject {
     private let tagSync: TagSyncService
     private let profileRepository: ProfileRepository
     private var isApplyingRemoteSelection = false
+    private var cancellables = Set<AnyCancellable>()
 
     private init() {
         let local = LocalTagRepository()
@@ -38,13 +46,20 @@ final class SessionTagStore: ObservableObject {
         self.profileRepository = ProfileRepository()
 
         wipeLegacyUserDefaultsIfNeeded()
+
+        // Re-render observers when premium status flips so the picker
+        // recomputes `canCreateMore` and the create-row affordance.
+        AppPreferences.shared.$isPremiumUser
+            .removeDuplicates()
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Reads
 
     var customTags: [SessionTag] { allTags.filter { !$0.isDefault } }
 
-    var canCreateMore: Bool { customTags.count < Self.customLimit }
+    var canCreateMore: Bool { customTags.count < customLimit }
 
     func tag(for id: UUID?) -> SessionTag? {
         guard let id else { return nil }
@@ -59,14 +74,17 @@ final class SessionTagStore: ObservableObject {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw SessionTagError.emptyName }
         guard trimmed.count <= SessionTag.maxNameLength else { throw SessionTagError.nameTooLong }
-        guard canCreateMore else { throw SessionTagError.limitReached }
+        guard canCreateMore else { throw SessionTagError.limitReached(limit: customLimit) }
         guard !nameExists(trimmed, excluding: nil) else { throw SessionTagError.duplicateName }
 
         let tag = SessionTag(id: UUID(), name: trimmed, isDefault: false)
         allTags.append(tag)
 
         let sync = tagSync
-        Task { try? await sync.saveTag(tag) }
+        Task {
+            do { try await sync.saveTag(tag) }
+            catch { Logger.log("Failed to save created tag '\(tag.name)': \(error)") }
+        }
     }
 
     func rename(id: UUID, to newName: String) throws {
@@ -83,7 +101,10 @@ final class SessionTagStore: ObservableObject {
         let updated = allTags[index]
 
         let sync = tagSync
-        Task { try? await sync.saveTag(updated) }
+        Task {
+            do { try await sync.saveTag(updated) }
+            catch { Logger.log("Failed to save renamed tag '\(updated.name)': \(error)") }
+        }
     }
 
     func delete(id: UUID) {
@@ -98,7 +119,10 @@ final class SessionTagStore: ObservableObject {
         }
 
         let sync = tagSync
-        Task { try? await sync.deleteTag(id: id) }
+        Task {
+            do { try await sync.deleteTag(id: id) }
+            catch { Logger.log("Failed to delete tag \(id): \(error)") }
+        }
     }
 
     // MARK: - Sync
@@ -117,11 +141,10 @@ final class SessionTagStore: ObservableObject {
     }
 
     private func hydrateSelectedTagFromRemote() async {
+        isApplyingRemoteSelection = true
+        defer { isApplyingRemoteSelection = false }
         do {
-            let remoteId = try await profileRepository.getLastSelectedTagId()
-            isApplyingRemoteSelection = true
-            selectedTagId = remoteId
-            isApplyingRemoteSelection = false
+            selectedTagId = try await profileRepository.getLastSelectedTagId()
         } catch {
             Logger.log("Failed to load last selected tag: \(error)")
         }
@@ -148,13 +171,11 @@ final class SessionTagStore: ObservableObject {
 
     // One-time cleanup of the pre-Supabase UserDefaults storage.
     private func wipeLegacyUserDefaultsIfNeeded() {
-        print("BEFORE WIPE: \(UserDefaults.standard.dictionaryRepresentation())")
         let defaults = UserDefaults.standard
         let migratedKey = "tagsMigratedToSupabase"
         guard !defaults.bool(forKey: migratedKey) else { return }
         defaults.removeObject(forKey: "customSessionTags")
         defaults.removeObject(forKey: "selectedSessionTagId")
         defaults.set(true, forKey: migratedKey)
-        print("AFTER WIPED: \(UserDefaults.standard.dictionaryRepresentation())")
     }
 }

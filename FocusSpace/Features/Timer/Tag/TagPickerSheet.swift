@@ -12,14 +12,20 @@ import SwiftUI
 struct TagPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var store = SessionTagStore.shared
+    @ObservedObject private var preferences = AppPreferences.shared
 
     @State private var editingTagId: UUID?
     @State private var draftName: String = ""
     @State private var isCreating = false
     @State private var newTagName: String = ""
     @State private var errorMessage: String?
+    @State private var showPaywall = false
 
     @FocusState private var focusedField: Field?
+
+    private var shouldShowUpgradeRow: Bool {
+        !preferences.isPremiumUser && !store.canCreateMore
+    }
 
     private enum Field: Hashable {
         case rename(UUID)
@@ -35,7 +41,7 @@ struct TagPickerSheet: View {
                     }
                 }
 
-                if store.canCreateMore {
+                if store.canCreateMore || shouldShowUpgradeRow {
                     Section {
                         createRow
                     }
@@ -50,15 +56,18 @@ struct TagPickerSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Tags")
+            .navigationTitle(AppConstants.Tag.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
+                    Button(AppConstants.Tag.done) { dismiss() }
                 }
             }
         }
         .presentationDetents([.medium, .large])
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(source: "tag_picker")
+        }
     }
 
     // MARK: - Rows
@@ -68,7 +77,7 @@ struct TagPickerSheet: View {
         if editingTagId == tag.id {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    TextField("Tag name", text: $draftName)
+                    TextField(AppConstants.Tag.tagNamePlaceholder, text: $draftName)
                         .focused($focusedField, equals: .rename(tag.id))
                         .submitLabel(.done)
                         .onSubmit { commitRename(for: tag.id) }
@@ -83,9 +92,9 @@ struct TagPickerSheet: View {
                         .foregroundColor(AppColors.secondaryText)
                 }
 
-                Button("Save") { commitRename(for: tag.id) }
+                Button(AppConstants.Tag.save) { commitRename(for: tag.id) }
                     .buttonStyle(.borderless)
-                Button("Cancel") { cancelEditing() }
+                Button(AppConstants.Tag.cancel) { cancelEditing() }
                     .buttonStyle(.borderless)
                     .foregroundColor(AppColors.secondaryText)
             }
@@ -99,7 +108,7 @@ struct TagPickerSheet: View {
                             .foregroundColor(AppColors.primaryText)
                         Spacer()
                         if store.selectedTagId == tag.id {
-                            Image(systemName: "checkmark")
+                            Image(systemName: AppConstants.Icon.checkmark)
                                 .foregroundColor(AppColors.accent)
                         }
                     }
@@ -111,7 +120,7 @@ struct TagPickerSheet: View {
                     Button {
                         beginEditing(tag)
                     } label: {
-                        Image(systemName: "pencil")
+                        Image(systemName: AppConstants.Icon.pencil)
                             .foregroundColor(AppColors.secondaryText)
                     }
                     .buttonStyle(.borderless)
@@ -122,7 +131,7 @@ struct TagPickerSheet: View {
                     Button(role: .destructive) {
                         store.delete(id: tag.id)
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        Label(AppConstants.Tag.delete, systemImage: AppConstants.Icon.trash)
                     }
                 }
             }
@@ -134,7 +143,7 @@ struct TagPickerSheet: View {
             if isCreating {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
-                        TextField("New tag name", text: $newTagName)
+                        TextField(AppConstants.Tag.newTagNamePlaceholder, text: $newTagName)
                             .focused($focusedField, equals: .create)
                             .submitLabel(.done)
                             .onSubmit { commitCreate() }
@@ -149,21 +158,37 @@ struct TagPickerSheet: View {
                             .foregroundColor(AppColors.secondaryText)
                     }
 
-                    Button("Add") { commitCreate() }
+                    Button(AppConstants.Tag.add) { commitCreate() }
                         .buttonStyle(.borderless)
-                    Button("Cancel") { cancelCreate() }
+                    Button(AppConstants.Tag.cancel) { cancelCreate() }
                         .buttonStyle(.borderless)
                         .foregroundColor(AppColors.secondaryText)
                 }
+            } else if shouldShowUpgradeRow {
+                Button {
+                    showPaywall = true
+                } label: {
+                    HStack {
+                        Image(systemName: AppConstants.Icon.lockFill)
+                        Text(AppConstants.Tag.upgradeLabel)
+                        Spacer()
+                        Text("\(store.customTags.count)/\(store.customLimit)")
+                            .font(AppTypography.caption)
+                            .foregroundColor(AppColors.secondaryText)
+                    }
+                    .foregroundColor(AppColors.primaryText)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             } else {
                 Button {
                     beginCreate()
                 } label: {
                     HStack {
-                        Image(systemName: "plus")
-                        Text("Create new tag")
+                        Image(systemName: AppConstants.Icon.plus)
+                        Text(AppConstants.Tag.createNew)
                         Spacer()
-                        Text("\(store.customTags.count)/\(SessionTagStore.customLimit)")
+                        Text("\(store.customTags.count)/\(store.customLimit)")
                             .font(AppTypography.caption)
                             .foregroundColor(AppColors.secondaryText)
                     }
