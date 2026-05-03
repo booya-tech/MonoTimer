@@ -40,6 +40,7 @@ enum AppConstants {
         static let pencil = "pencil"
         static let lockFill = "lock.fill"
         static let trash = "trash"
+        static let tagFill = "tag.fill"
     }
 
     // MARK: - Tag Picker

@@ -264,6 +264,9 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             featureRow(icon: AppConstants.Icon.chartBarFill,
                        title: AppString.paywallFeatureSessionHistoryTitle,
                        subtitle: AppString.paywallFeatureSessionHistorySubtitle)
+            featureRow(icon: AppConstants.Icon.tagFill,
+                       title: AppString.paywallFeatureSessionTagTitle,
+                       subtitle: AppString.paywallFeatureSessionTagSubtitle)
             featureRow(icon: AppConstants.Icon.starFill,
                        title: AppString.paywallFeatureEarlyAccessTitle,
                        subtitle: AppString.paywallFeatureEarlyAccessSubtitle)

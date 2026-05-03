@@ -81,6 +81,8 @@ enum AppString {
     static let paywallFeatureEarlyAccessSubtitle = "Be the first to try new features"
     static let paywallFeatureSupportDevTitle = "Support Development"
     static let paywallFeatureSupportDevSubtitle = "Help keep MonoTimer ad-free"
+    static let paywallFeatureSessionTagTitle = "Up to 20 Custom Tags"
+    static let paywallFeatureSessionTagSubtitle = "Label sessions with your own tags — free users get 3"
     // Bottom CTA
     static let paywallAutoRenewDisclaimer = "Plans auto-renew. Cancel anytime in Settings."
     static let paywallRestorePurchases = "Restore Purchases"
