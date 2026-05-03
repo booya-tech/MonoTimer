@@ -57,6 +57,9 @@ enum AppConstants {
         static var upgradeLabel: String {
             "Upgrade for up to \(Premium.premiumCustomTagLimit) tags"
         }
+        static func upgradeOverLimitLabel(count: Int) -> String {
+            "Upgrade to keep all \(count) tags"
+        }
     }
     
     // MARK: - URLs

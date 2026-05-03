@@ -48,10 +48,16 @@ final class SessionTagStore: ObservableObject {
         wipeLegacyUserDefaultsIfNeeded()
 
         // Re-render observers when premium status flips so the picker
-        // recomputes `canCreateMore` and the create-row affordance.
+        // recomputes `canCreateMore` and the create-row affordance, and
+        // fall back off any selection that's now locked over the free cap.
         AppPreferences.shared.$isPremiumUser
             .removeDuplicates()
-            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+                Task { @MainActor [weak self] in
+                    self?.enforceSelectionGuard()
+                }
+            }
             .store(in: &cancellables)
     }
 
@@ -60,6 +66,26 @@ final class SessionTagStore: ObservableObject {
     var customTags: [SessionTag] { allTags.filter { !$0.isDefault } }
 
     var canCreateMore: Bool { customTags.count < customLimit }
+
+    /// IDs of custom tags that exceed the current `customLimit`. Empty for premium.
+    /// `customTags` is oldest-first (remote orders by `created_at ASC`), so the
+    /// oldest `customLimit` tags stay usable and the rest are locked.
+    var lockedCustomTagIds: Set<UUID> {
+        guard !AppPreferences.shared.isPremiumUser else { return [] }
+        let custom = customTags
+        guard custom.count > customLimit else { return [] }
+        return Set(custom.dropFirst(customLimit).map { $0.id })
+    }
+
+    func isLocked(_ tag: SessionTag) -> Bool {
+        lockedCustomTagIds.contains(tag.id)
+    }
+
+    /// How many custom tags are over the current limit. Drives the "keep all N tags"
+    /// upgrade copy in the picker.
+    var overLimitCount: Int {
+        max(0, customTags.count - customLimit)
+    }
 
     func tag(for id: UUID?) -> SessionTag? {
         guard let id else { return nil }
@@ -143,13 +169,16 @@ final class SessionTagStore: ObservableObject {
     }
 
     private func hydrateSelectedTagFromRemote() async {
-        isApplyingRemoteSelection = true
-        defer { isApplyingRemoteSelection = false }
         do {
-            selectedTagId = try await profileRepository.getLastSelectedTagId()
+            let id = try await profileRepository.getLastSelectedTagId()
+            isApplyingRemoteSelection = true
+            defer { isApplyingRemoteSelection = false }
+            selectedTagId = id
         } catch {
             Logger.log("Failed to load last selected tag: \(error)")
         }
+        // Run outside the suppression window so a fallback gets persisted.
+        enforceSelectionGuard()
     }
 
     private func persistSelectedTagToRemote(_ id: UUID?) {
@@ -164,6 +193,17 @@ final class SessionTagStore: ObservableObject {
     }
 
     // MARK: - Helpers
+
+    /// If the current selection points at a now-locked custom tag (e.g. after a
+    /// premium downgrade), fall back to the first default tag. The `didSet` on
+    /// `selectedTagId` persists the new value to `profiles.last_selected_tag_id`.
+    private func enforceSelectionGuard() {
+        guard !allTags.isEmpty,
+            let selected = selectedTag,
+            isLocked(selected)
+        else { return }
+        selectedTagId = allTags.first(where: { $0.isDefault })?.id
+    }
 
     private func nameExists(_ name: String, excluding id: UUID?) -> Bool {
         allTags.contains { tag in

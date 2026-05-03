@@ -109,11 +109,21 @@ struct TagPickerSheet: View {
                     .foregroundColor(AppColors.secondaryText)
             }
         } else {
+            let locked = store.isLocked(tag)
             HStack {
                 Button {
-                    selectAndDismiss(tag)
+                    if locked {
+                        analytics.capture(.tagUpgradeTapped)
+                        showPaywall = true
+                    } else {
+                        selectAndDismiss(tag)
+                    }
                 } label: {
                     HStack {
+                        if locked {
+                            Image(systemName: AppConstants.Icon.lockFill)
+                                .foregroundColor(AppColors.secondaryText)
+                        }
                         Text(tag.name)
                             .foregroundColor(AppColors.primaryText)
                         Spacer()
@@ -126,7 +136,7 @@ struct TagPickerSheet: View {
                 }
                 .buttonStyle(.plain)
 
-                if !tag.isDefault {
+                if !tag.isDefault && !locked {
                     Button {
                         beginEditing(tag)
                     } label: {
@@ -136,6 +146,7 @@ struct TagPickerSheet: View {
                     .buttonStyle(.borderless)
                 }
             }
+            .opacity(locked ? 0.5 : 1)
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 if !tag.isDefault {
                     Button(role: .destructive) {
@@ -185,11 +196,17 @@ struct TagPickerSheet: View {
                 } label: {
                     HStack {
                         Image(systemName: AppConstants.Icon.lockFill)
-                        Text(AppConstants.Tag.upgradeLabel)
+                        Text(store.overLimitCount > 0
+                             ? AppConstants.Tag.upgradeOverLimitLabel(count: store.customTags.count)
+                             : AppConstants.Tag.upgradeLabel)
                         Spacer()
-                        Text("\(store.customTags.count)/\(store.customLimit)")
-                            .font(AppTypography.caption)
-                            .foregroundColor(AppColors.secondaryText)
+                        // Hide the n/limit fraction when over-limit; the count
+                        // is already conveyed by the "keep all N tags" copy.
+                        if store.overLimitCount == 0 {
+                            Text("\(store.customTags.count)/\(store.customLimit)")
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.secondaryText)
+                        }
                     }
                     .foregroundColor(AppColors.primaryText)
                     .contentShape(Rectangle())
