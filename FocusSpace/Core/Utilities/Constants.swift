@@ -35,6 +35,31 @@ enum AppConstants {
         static let hourglassBottomHalfFilled = "hourglass.bottomhalf.filled"
         static let heartFill = "heart.fill"
         static let chartBarFill = "chart.bar.fill"
+        static let plus = "plus"
+        static let checkmark = "checkmark"
+        static let pencil = "pencil"
+        static let lockFill = "lock.fill"
+        static let trash = "trash"
+    }
+
+    // MARK: - Tag Picker
+    enum Tag {
+        static let navigationTitle = "Tags"
+        static let done = "Done"
+        static let save = "Save"
+        static let cancel = "Cancel"
+        static let add = "Add"
+        static let delete = "Delete"
+        static let createNew = "Create new tag"
+        static let tagNamePlaceholder = "Tag name"
+        static let newTagNamePlaceholder = "New tag name"
+        static let addTagAccessibility = "Add tag"
+        static var upgradeLabel: String {
+            "Upgrade for up to \(Premium.premiumCustomTagLimit) tags"
+        }
+        static func upgradeOverLimitLabel(count: Int) -> String {
+            "Upgrade to keep all \(count) tags"
+        }
     }
     
     // MARK: - URLs
@@ -80,6 +105,8 @@ enum AppConstants {
     
     enum Premium {
         static let minPremiumValue: Int = 4
+        static let freeCustomTagLimit = 3
+        static let premiumCustomTagLimit = 20
     }
     
     // MARK: - Chart

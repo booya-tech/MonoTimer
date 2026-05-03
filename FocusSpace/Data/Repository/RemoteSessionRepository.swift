@@ -16,26 +16,23 @@ final class RemoteSessionRepository: SessionRepository {
 
     func getSessions(from startDate: Date?, to endDate: Date?) async throws -> [Session] {
         guard let supabase else { throw RepositoryError.serviceUnavailable }
-        
-        let response: [SessionDTO] =
-            try await supabase
+
+        var query = supabase
             .from("sessions")
             .select()
+
+        if let startDate {
+            query = query.gte("start_at", value: startDate.ISO8601Format())
+        }
+        if let endDate {
+            query = query.lte("end_at", value: endDate.ISO8601Format())
+        }
+
+        let response: [SessionDTO] = try await query
             .order("start_at", ascending: false)
             .execute()
             .value
-
-        var sessions = response.map { $0.toSession() }
-
-        if let startDate = startDate {
-            sessions = sessions.filter { $0.startAt >= startDate }
-        }
-
-        if let endDate = endDate {
-            sessions = sessions.filter { $0.endAt <= endDate }
-        }
-
-        return sessions
+        return response.map { $0.toSession() }
     }
 
     func save(_ session: Session) async throws {
@@ -61,13 +58,3 @@ final class RemoteSessionRepository: SessionRepository {
     }
 }
 
-// MARK: - Repository Error
-enum RepositoryError: LocalizedError {
-    case serviceUnavailable
-    
-    var errorDescription: String? {
-        switch self {
-        case .serviceUnavailable: return "Remote storage service is unavailable"
-        }
-    }
-}

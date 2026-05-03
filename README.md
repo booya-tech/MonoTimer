@@ -110,9 +110,27 @@ A minimalist, black-and-white Pomodoro productivity app for iOS built with Swift
      start_at TIMESTAMP WITH TIME ZONE NOT NULL,
      end_at TIMESTAMP WITH TIME ZONE NOT NULL,
      duration_seconds INTEGER NOT NULL,
-     tag TEXT,
+     tag TEXT, -- holds the UUID of a row in `tags`
      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
    );
+
+   -- Tags table (user-scoped, RLS-protected)
+   CREATE TABLE tags (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+     name TEXT NOT NULL,
+     is_default BOOLEAN NOT NULL DEFAULT false,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+   CREATE UNIQUE INDEX tags_user_lower_name_unique
+     ON tags (user_id, lower(name));
+
+   -- Defaults (Study, Work, Coding) are seeded per user on first sign-in
+   -- with `is_default = true`. RLS prevents update/delete on default rows.
+
+   -- Cross-device persistence of the user's last-selected tag
+   ALTER TABLE profiles
+     ADD COLUMN last_selected_tag_id UUID REFERENCES tags(id) ON DELETE SET NULL;
    ```
 
 4. **Environment Configuration**:

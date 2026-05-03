@@ -37,6 +37,7 @@ final class TimerViewModel: ObservableObject {
     // Notification Manager
     @Published var notificationManager = NotificationManager.shared
     @Published var preferences = AppPreferences.shared
+    @Published var tagStore = SessionTagStore.shared
 
     private let sessionSync: SessionSyncService
     private let analytics: AnalyticsService
@@ -343,7 +344,7 @@ final class TimerViewModel: ObservableObject {
             type: currentSessionType,
             startAt: startTime,
             endAt: Date(),
-            tag: nil
+            tag: tagStore.selectedTagId?.uuidString
         )
 
         Task {
