@@ -9,8 +9,14 @@ import SwiftUI
 
 struct AuthView: View {
     @StateObject private var viewModel: AuthViewModel
+    @State private var showPassword = false
+    @State private var showConfirmPassword = false
+    @State private var showForgotPassword = false
+
+    private let authService: AuthService
 
     init(authService: AuthService) {
+        self.authService = authService
         self._viewModel = StateObject(wrappedValue: AuthViewModel(authService: authService))
     }
 
@@ -64,6 +70,9 @@ struct AuthView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .analyticsScreen(AppConstants.Analytics.Screen.auth)
+        .fullScreenCover(isPresented: $showForgotPassword) {
+            ForgotPasswordView(authService: authService, prefillEmail: viewModel.email)
+        }
     }
     
     private var appHeader: some View {
@@ -73,7 +82,7 @@ struct AuthView: View {
                 .font(AppTypography.title1)
                 .foregroundColor(AppColors.primaryText)
 
-            Text(viewModel.isSignUpMode ? "Create an account" : "welcome back")
+            Text(viewModel.isSignUpMode ? AppString.Auth.createAccount : AppString.Auth.welcomeBack)
                 .font(AppTypography.body)
                 .foregroundColor(AppColors.secondaryText)
         }
@@ -82,7 +91,7 @@ struct AuthView: View {
     private var emailAndPasswordFields: some View {
         VStack(spacing: 16) {
             // Email field
-            TextField("Email", text: $viewModel.email)
+            TextField(AppString.Auth.emailPlaceholder, text: $viewModel.email)
                 .controlSize(.large)
                 .textFieldStyle(MonoTextFieldStyle())
                 .textInputAutocapitalization(.never)
@@ -90,15 +99,22 @@ struct AuthView: View {
                 .analyticsMask()
 
             // Password field
-            SecureField("Password", text: $viewModel.password)
-                .textFieldStyle(MonoTextFieldStyle())
-                .analyticsMask()
+            PasswordField(placeholder: AppString.Auth.passwordPlaceholder, text: $viewModel.password, isVisible: $showPassword)
+
+            if !viewModel.isSignUpMode {
+                HStack {
+                    Spacer()
+                    Button(AppString.Auth.forgotPassword) {
+                        showForgotPassword = true
+                    }
+                    .font(AppTypography.caption)
+                    .foregroundColor(AppColors.secondaryText)
+                }
+            }
 
             // Confirm password (only for sign up)
             if viewModel.isSignUpMode {
-                SecureField("Confirm Password", text: $viewModel.confirmPassword)
-                    .textFieldStyle(MonoTextFieldStyle())
-                    .analyticsMask()
+                PasswordField(placeholder: AppString.Auth.confirmPasswordPlaceholder, text: $viewModel.confirmPassword, isVisible: $showConfirmPassword)
             }
 
             // Error message
@@ -117,7 +133,7 @@ struct AuthView: View {
             Rectangle()
                 .frame(height: 1)
                 .foregroundColor(AppColors.secondaryText.opacity(0.3))
-            Text("OR")
+            Text(AppString.Auth.orDivider)
                 .font(AppTypography.caption)
                 .foregroundColor(AppColors.secondaryText)
             Rectangle()
@@ -130,7 +146,7 @@ struct AuthView: View {
     private var primaryButton: some View {
         // Main action button
         PrimaryButton(
-            title: viewModel.isLoading ? "Loading..." : (viewModel.isSignUpMode ? "Sign Up" : "Sign In")
+            title: viewModel.isLoading ? AppString.Auth.loading : (viewModel.isSignUpMode ? AppString.Auth.signUp : AppString.signIn)
         ) {
             Task {
                 await viewModel.authenticate()
@@ -138,9 +154,10 @@ struct AuthView: View {
         }
         .disabled(viewModel.isLoading)
 
-        Spacer().frame(height: 8)
+        Spacer().frame(height: 12)
+        
         Button(action: viewModel.toggleMode) {
-            Text(viewModel.isSignUpMode ? "Already have an account? Sign In" : "Don't have an account?  Sign Up")
+            Text(viewModel.isSignUpMode ? AppString.Auth.alreadyHaveAccount : AppString.Auth.dontHaveAccount)
                 .font(AppTypography.caption)
                 .foregroundColor(AppColors.secondaryText)
         }

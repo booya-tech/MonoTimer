@@ -90,6 +90,21 @@ enum AppString {
     static let paywallPrivacy = "Privacy"
     static let paywallSeparator = "|"
 
+    // Auth View
+    enum Auth {
+        static let createAccount = "Create an account"
+        static let welcomeBack = "welcome back"
+        static let emailPlaceholder = "Email"
+        static let passwordPlaceholder = "Password"
+        static let confirmPasswordPlaceholder = "Confirm Password"
+        static let forgotPassword = "Forgot Password?"
+        static let orDivider = "OR"
+        static let loading = "Loading..."
+        static let signUp = "Sign Up"
+        static let alreadyHaveAccount = "Already have an account? Sign In"
+        static let dontHaveAccount = "Don't have an account?  Sign Up"
+    }
+
     // Onboarding
     static let onboardingGetStarted = "Get Started"
     static let onboardingContinue = "Continue"

@@ -71,6 +71,10 @@ enum AppConstants {
 
         static let privacyPolicyURL = URL(string: privacyPolicy)!
         static let termsOfServiceURL = URL(string: termsOfService)!
+
+        // MARK: Deep Links
+        static let deepLinkScheme = "monotimer"
+        static let passwordResetCallback = URL(string: "monotimer://reset-callback")!
     }
     
     // MARK: - Timer Defaults
