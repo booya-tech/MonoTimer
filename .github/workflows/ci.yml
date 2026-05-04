@@ -36,6 +36,17 @@ jobs:
       - name: Install dependencies
         run: bundle install
       
+      - name: Create Dev Secrets
+        run: |
+          mkdir -p Config
+          cat > Config/Secrets.Dev.xcconfig << EOF
+          SUPABASE_URL = ${{ secrets.DEV_SUPABASE_URL }}
+          SUPABASE_ANON_KEY = ${{ secrets.DEV_SUPABASE_ANON_KEY }}
+          POSTHOG_API_KEY = ${{ secrets.DEV_POSTHOG_API_KEY }}
+          GOOGLE_CLIENT_ID = ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_REVERSED_CLIENT_ID = ${{ secrets.GOOGLE_REVERSED_CLIENT_ID }}
+          EOF
+      
       - name: Run tests
         run: bundle exec fastlane test
         continue-on-error: true  # Don't fail if no tests yet
@@ -59,18 +70,13 @@ jobs:
       - name: Install dependencies
         run: bundle install
       
-      - name: Create Secrets.xcconfig file
+      - name: Create Prod Secrets
         run: |
           mkdir -p Config
-          cat > Config/Secrets.xcconfig << EOF
-          //
-          //  Secrets.xcconfig
-          //  MonoTimer
-          //
-          // Supabase Configuration
-          
+          cat > Config/Secrets.Prod.xcconfig << EOF
           SUPABASE_URL = ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY = ${{ secrets.SUPABASE_ANON_KEY }}
+          POSTHOG_API_KEY = ${{ secrets.POSTHOG_API_KEY }}
           GOOGLE_CLIENT_ID = ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_REVERSED_CLIENT_ID = ${{ secrets.GOOGLE_REVERSED_CLIENT_ID }}
           EOF

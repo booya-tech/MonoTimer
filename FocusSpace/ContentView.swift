@@ -62,6 +62,8 @@ struct ContentView: View {
                 .font(AppTypography.title3)
                 .foregroundColor(AppColors.primaryText)
             
+            Spacer().frame(height: 32)
+            
             // Timer display
             CircleTimerView(
                 progress: timerViewModel.progress,

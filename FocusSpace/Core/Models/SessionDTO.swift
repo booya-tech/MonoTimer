@@ -31,10 +31,16 @@ struct SessionDTO: Codable {
     
     func toSession() -> Session {
         Session(
+            id: UUID(uuidString: id) ?? {
+                Logger.log("SessionDTO: invalid UUID '\(id)', generating fallback")
+                return UUID()
+            }(),
             type: SessionType(rawValue: session_type) ?? .focus,
-            startAt: ISO8601DateFormatter().date(from: start_at) ?? Date(),
-            endAt: ISO8601DateFormatter().date(from: end_at) ?? Date(),
+            startAt: Self.iso8601.date(from: start_at) ?? Date(),
+            endAt: Self.iso8601.date(from: end_at) ?? Date(),
             tag: tag
         )
     }
+
+    private static let iso8601 = ISO8601DateFormatter()
 }

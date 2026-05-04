@@ -9,7 +9,7 @@ platform :ios do
   # CONFIGURATION
   # ============================================
   PROJECT_NAME = "MonoTimer.xcodeproj"
-  SCHEME_NAME = "MonoTimer"
+  SCHEME_NAME = "MonoTimer-Prod"
   TARGET_NAME = "MonoTimer"
   WIDGET_TARGET = "MonoTimerWidgetsExtension"
   ALL_TARGETS = [TARGET_NAME, WIDGET_TARGET]

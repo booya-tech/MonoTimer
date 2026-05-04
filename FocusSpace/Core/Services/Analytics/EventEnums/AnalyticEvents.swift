@@ -35,6 +35,20 @@ enum AnalyticsEvent {
 
     // Settings
     case settingChanged(key: String, value: String)
+
+    // Onboarding
+    case onboardingStarted
+    case onboardingStepCompleted(step: String)
+    case onboardingCompleted(focusLengthMinutes: Int, dailyGoalMinutes: Int, notificationsEnabled: Bool)
+
+    // Tags
+    case tagPickerOpened(source: String)
+    case tagSelected(tagId: String, isDefault: Bool)
+    case tagCreated(tagId: String, customCount: Int)
+    case tagRenamed(tagId: String)
+    case tagDeleted(tagId: String, customCount: Int)
+    case tagLimitReached(limit: Int, isPremium: Bool)
+    case tagUpgradeTapped
 }
 
 extension AnalyticsEvent {
@@ -58,6 +72,16 @@ extension AnalyticsEvent {
         case .purchaseRestored: return "purchase_restored"
         case .subscriptionRenewed: return "subscription_renewed"
         case .settingChanged: return "setting_changed"
+        case .onboardingStarted: return "onboarding_started"
+        case .onboardingStepCompleted: return "onboarding_step_completed"
+        case .onboardingCompleted: return "onboarding_completed"
+        case .tagPickerOpened: return "tag_picker_opened"
+        case .tagSelected: return "tag_selected"
+        case .tagCreated: return "tag_created"
+        case .tagRenamed: return "tag_renamed"
+        case .tagDeleted: return "tag_deleted"
+        case .tagLimitReached: return "tag_limit_reached"
+        case .tagUpgradeTapped: return "tag_upgrade_tapped"
         }
     }
 
@@ -65,7 +89,8 @@ extension AnalyticsEvent {
     var properties: [String: Any]? {
         switch self {
         case .appLaunched, .authSignedOut, .timerResumed, .timerReset,
-             .breakSkipped, .paywallDismissed:
+             .breakSkipped, .paywallDismissed, .onboardingStarted,
+             .tagUpgradeTapped:
             return nil
 
         case .authSignedIn(let method):
@@ -101,6 +126,32 @@ extension AnalyticsEvent {
 
         case .settingChanged(let key, let value):
             return ["key": key, "value": value]
+
+        case .onboardingStepCompleted(let step):
+            return ["step": step]
+
+        case .onboardingCompleted(let focusLengthMinutes, let dailyGoalMinutes, let notificationsEnabled):
+            return [
+                "focus_length_minutes": focusLengthMinutes,
+                "daily_goal_minutes": dailyGoalMinutes,
+                "notifications_enabled": notificationsEnabled
+            ]
+
+        case .tagPickerOpened(let source):
+            return ["source": source]
+
+        case .tagSelected(let tagId, let isDefault):
+            return ["tag_id": tagId, "is_default": isDefault]
+
+        case .tagCreated(let tagId, let customCount),
+             .tagDeleted(let tagId, let customCount):
+            return ["tag_id": tagId, "custom_count": customCount]
+
+        case .tagRenamed(let tagId):
+            return ["tag_id": tagId]
+
+        case .tagLimitReached(let limit, let isPremium):
+            return ["limit": limit, "is_premium": isPremium]
         }
     }
 }

@@ -41,11 +41,19 @@ enum SessionType: String, CaseIterable, Codable {
 }
 
 struct Session: Identifiable, Hashable {
-    let id = UUID()
+    let id: UUID
     let type: SessionType
     let startAt: Date
     let endAt: Date
     let tag: String?
+
+    init(id: UUID = UUID(), type: SessionType, startAt: Date, endAt: Date, tag: String?) {
+        self.id = id
+        self.type = type
+        self.startAt = startAt
+        self.endAt = endAt
+        self.tag = tag
+    }
 
     // Duration in seconds
     var duration: TimeInterval {

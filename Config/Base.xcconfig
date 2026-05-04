@@ -1,0 +1,3 @@
+// Base.xcconfig
+// Shared build settings across all environments.
+// No secrets here.

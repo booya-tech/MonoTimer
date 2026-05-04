@@ -73,6 +73,15 @@ final class AppPreferences: ObservableObject {
         }
     }
 
+    // MARK: - Onboarding
+    @Published var hasCompletedOnboarding: Bool {
+        didSet { defaults.set(hasCompletedOnboarding, forKey: "hasCompletedOnboarding") }
+    }
+    // Version of the onboarding flow that the user has completed
+    @Published var onboardingVersion: Int {
+        didSet { defaults.set(onboardingVersion, forKey: "onboardingVersion") }
+    }
+
     // MARK: - Initialization
     private init() {
         self.selectedFocusDuration = defaults.object(forKey: "selectedFocusDuration") as? Int ?? 25
@@ -84,6 +93,8 @@ final class AppPreferences: ObservableObject {
         self.isHapticsEnabled = defaults.object(forKey: "isHapticsEnabled") as? Bool ?? true
         self.isPremiumUser = defaults.bool(forKey: "isPremiumUser")
         self.isAnalyticsEnabled = defaults.object(forKey: "isAnalyticsEnabled") as? Bool ?? true
+        self.hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
+        self.onboardingVersion = defaults.object(forKey: "onboardingVersion") as? Int ?? 0
     }
 
     // Reset all preferences to defaults
