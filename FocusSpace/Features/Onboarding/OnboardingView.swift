@@ -41,6 +41,7 @@ struct OnboardingView: View {
                     .padding(.bottom, AppConstants.UI.mediumPadding)
             }
         }
+        .preferredColorScheme(.dark)
         .analyticsScreen(AppConstants.Analytics.Screen.onboarding)
     }
 
