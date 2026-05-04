@@ -9,6 +9,7 @@ xcuserdata/
 # SECRETS
 # ============================================
 Config/Secrets.xcconfig
+Config/Secrets.*.xcconfig
 *.p8
 
 # ============================================
