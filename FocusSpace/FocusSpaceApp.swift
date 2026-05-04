@@ -29,7 +29,18 @@ struct FocusSpaceApp: App {
                 .environmentObject(storeKitManager)
                 .environment(\.analytics, AnalyticsBootstrap.shared)
                 .onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
+                    if url.scheme == AppConstants.URLs.deepLinkScheme {
+                        Task {
+                            do {
+                                try await appViewModel.authService.handleDeepLink(url)
+                            } catch {
+                                Logger.log("Deep link handling failed: \(error.localizedDescription)")
+                                ErrorHandler.shared.handle(error)
+                            }
+                        }
+                    } else {
+                        GIDSignIn.sharedInstance.handle(url)
+                    }
                 }
         }
     }

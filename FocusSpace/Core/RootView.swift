@@ -39,6 +39,12 @@ struct RootView: View {
                 Task { await storeKitManager.updatePurchasedProducts() }
             }
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { appViewModel.authService.isPasswordRecovery },
+            set: { appViewModel.authService.isPasswordRecovery = $0 }
+        )) {
+            ResetPasswordView(authService: appViewModel.authService)
+        }
     }
 }
 
