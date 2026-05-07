@@ -16,6 +16,7 @@ final class AuthService: ObservableObject {
     @Published var currentUser: User? = nil
     @Published var isLoading = false
     @Published var isInitialized = false
+    @Published var isPasswordRecovery = false
 
     private var supabase: SupabaseClient? { SupabaseManager.shared.client }
     private let googleSignIn: GoogleSignInCoordinator
@@ -129,6 +130,41 @@ final class AuthService: ObservableObject {
         )
 
         currentUser = response.user
+    }
+
+    /// Send a password-reset email. The link in the email redirects back to
+    /// the app via the `monotimer://reset-callback` deep link.
+    func resetPasswordForEmail(_ email: String) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+
+        try await supabase.auth.resetPasswordForEmail(
+            email,
+            redirectTo: AppConstants.URLs.passwordResetCallback
+        )
+    }
+
+    /// Handle an incoming deep link by exchanging the URL tokens for a session.
+    /// Sets `isPasswordRecovery` when the URL originates from a password reset.
+    /// Throws on token exchange failure so the caller can surface the error.
+    func handleDeepLink(_ url: URL) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+
+        let isRecovery = url.host == "reset-callback"
+        let session = try await supabase.auth.session(from: url)
+        currentUser = session.user
+
+        if isRecovery {
+            isPasswordRecovery = true
+        }
+    }
+
+    /// Set a new password for the currently authenticated user (after a
+    /// password-recovery deep link has been handled).
+    func updatePassword(_ newPassword: String) async throws {
+        guard let supabase else { throw AuthError.serviceUnavailable }
+
+        try await supabase.auth.update(user: UserAttributes(password: newPassword))
+        isPasswordRecovery = false
     }
 
     // Sign out current user
