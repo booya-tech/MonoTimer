@@ -35,10 +35,9 @@ struct CircleTimerView: View {
                         height: AppConstants.UI.circleSize
                     )
                     .clipShape(Circle())
+                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: waveOffset)
                     .onAppear {
-                        withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
-                            waveOffset = AppConstants.UI.circleSize
-                        }
+                        waveOffset = AppConstants.UI.circleSize
                     }
                 
                 // Bubble decorations
