@@ -12,11 +12,10 @@ import StoreKit
 
 struct PaywallView<VM: PaywallViewModelProtocol>: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.analytics) private var analytics
-    @ObservedObject private var vm: VM
+    @StateObject private var vm: VM
 
     init(vm: VM) {
-        _vm = ObservedObject(wrappedValue: vm)
+        _vm = StateObject(wrappedValue: vm)
     }
 
     var body: some View {
@@ -59,7 +58,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(AppString.skip) {
-                        analytics.capture(.paywallDismissed)
+                        vm.dismissPaywall()
                         dismiss()
                     }
                         .font(AppTypography.body)
@@ -74,7 +73,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             .task {
                 await vm.loadInitialData()
             }
-            .onChange(of: vm.selectedUserPlans) { _, newPlan in
+            .onChange(of: vm.selectedPlan) { _, newPlan in
                 vm.onPlanChanged(newPlan)
             }
             .analyticsScreen(AppConstants.Analytics.Screen.paywall)
@@ -97,11 +96,11 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
     private var planSelector: some View {
         HStack(spacing: 8) {
             ForEach(UserPlans.allCases) { plan in
-                let isSelected = vm.selectedUserPlans == plan
+                let isSelected = vm.selectedPlan == plan
 
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        vm.selectedUserPlans = plan
+                        vm.selectedPlan = plan
                     }
                     HapticManager.shared.light()
                 } label: {
@@ -136,7 +135,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
     private var planCard: some View {
         ZStack(alignment: .topTrailing) {
             VStack(alignment: .leading, spacing: 12) {
-                switch vm.selectedUserPlans {
+                switch vm.selectedPlan {
                 case .standard:
                     standardPlanCardContent
 
@@ -163,7 +162,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
                     Image(systemName: "checkmark")
                         .font(.caption2)
 
-                    Text("Active")
+                    Text(AppString.paywallActiveBadge)
                         .font(AppTypography.caption.weight(.semibold))
                         .foregroundStyle(AppColors.primaryText)
                 }
@@ -227,7 +226,7 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
                 .foregroundStyle(AppColors.primaryText)
 
             VStack(spacing: 16) {
-                if vm.selectedUserPlans == .standard {
+                if vm.selectedPlan == .standard {
                     standardFeatures
                 } else {
                     premiumFeatures

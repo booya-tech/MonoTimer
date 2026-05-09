@@ -28,6 +28,7 @@ enum AnalyticsEvent {
     case paywallViewed(source: String)
     case paywallPurchaseStarted(productId: String)
     case paywallPurchaseSucceeded(productId: String)
+    case paywallPurchaseCancelled(productId: String)
     case paywallPurchaseFailed(productId: String, reason: String)
     case paywallDismissed
     case purchaseRestored(productId: String)
@@ -67,6 +68,7 @@ extension AnalyticsEvent {
         case .paywallViewed: return "paywall_viewed"
         case .paywallPurchaseStarted: return "paywall_purchase_started"
         case .paywallPurchaseSucceeded: return "paywall_purchase_succeeded"
+        case .paywallPurchaseCancelled: return "paywall_purchase_cancelled"
         case .paywallPurchaseFailed: return "paywall_purchase_failed"
         case .paywallDismissed: return "paywall_dismissed"
         case .purchaseRestored: return "purchase_restored"
@@ -117,6 +119,7 @@ extension AnalyticsEvent {
 
         case .paywallPurchaseStarted(let productId),
              .paywallPurchaseSucceeded(let productId),
+             .paywallPurchaseCancelled(let productId),
              .purchaseRestored(let productId),
              .subscriptionRenewed(let productId):
             return ["product_id": productId]

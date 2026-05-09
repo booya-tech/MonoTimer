@@ -95,15 +95,14 @@ final class StoreKitManager: ObservableObject {
         case .success(let verification):
             let transaction = try checkVerified(verification)
             await transaction.finish()
-            await updatePurchasedProducts()
-            return true
+            purchasedProductIDs.insert(product.id)
+            preferences.isPremiumUser = true
 
+            return true
         case .userCancelled:
             return false
-
         case .pending:
             return false
-
         @unknown default:
             return false
         }
@@ -137,21 +136,28 @@ final class StoreKitManager: ObservableObject {
     /// Iterates current entitlements to determine active subscriptions,
     /// then syncs the result with AppPreferences.isPremiumUser
     func updatePurchasedProducts() async {
-        var purchased: Set<String> = []
+        var active: Set<String> = []
+        var revoked: Set<String> = []
 
         for await result in Transaction.currentEntitlements {
             do {
                 let transaction = try checkVerified(result)
                 if transaction.revocationDate == nil {
-                    purchased.insert(transaction.productID)
+                    active.insert(transaction.productID)
+                } else {
+                    revoked.insert(transaction.productID)
                 }
             } catch {
                 Logger.log("Unverified entitlement: \(error.localizedDescription)")
             }
         }
 
-        purchasedProductIDs = purchased
+        purchasedProductIDs = active
         preferences.isPremiumUser = hasActiveSubscription
+    }
+
+    deinit {
+        transactionListener?.cancel()
     }
 
     // MARK: - Transaction Listener
@@ -159,8 +165,9 @@ final class StoreKitManager: ObservableObject {
     /// Listens for external transaction changes: renewals, refunds,
     /// family sharing, Ask to Buy approvals
     private func listenForTransactions() -> Task<Void, Error> {
-        Task.detached {
+        Task.detached { [weak self] in
             for await result in Transaction.updates {
+                guard let self else { return }
                 do {
                     let transaction = try await self.checkVerified(result)
                     await transaction.finish()
@@ -169,7 +176,7 @@ final class StoreKitManager: ObservableObject {
                 } catch {
                     Logger.log("Unverified transaction: \(error.localizedDescription)")
                 }
-            }
+            } 
         }
     }
 
