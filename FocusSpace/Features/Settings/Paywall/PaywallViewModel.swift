@@ -20,7 +20,7 @@ enum UserPlans: String, CaseIterable, Identifiable {
 @MainActor
 protocol PaywallViewModelProtocol: ObservableObject {
     var selectedProduct: Product? { get }
-    var selectedUserPlans: UserPlans { get set }
+    var selectedPlan: UserPlans { get set }
     var isPurchasing: Bool { get }
     var showError: Bool { get set }
     var errorMessage: String { get }
@@ -40,6 +40,7 @@ protocol PaywallViewModelProtocol: ObservableObject {
     func purchaseSelectedProduct() async -> Bool
     func restorePurchases() async
     func retryLoadProducts() async
+    func dismissPaywall()
     func planLabel(for product: Product) -> String
     func periodLabel(for product: Product) -> String
     func savingsPercentage(yearly: Decimal, monthly: Decimal) -> Int
@@ -62,7 +63,7 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     private var hasCapturedView = false
 
     @Published var selectedProduct: Product?
-    @Published var selectedUserPlans: UserPlans = .standard
+    @Published var selectedPlan: UserPlans = .standard
     @Published var isPurchasing = false
     @Published var showError = false
     @Published var errorMessage = ""
@@ -74,11 +75,11 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     var yearlyProduct: Product? { storeKitManager.yearlyProduct }
 
     var isActivePlan: Bool {
-        selectedUserPlans == storeKitManager.currentPlan
+        selectedPlan == storeKitManager.currentPlan
     }
 
     var isStandardSelected: Bool {
-        selectedUserPlans == .standard
+        selectedPlan == .standard
     }
 
     var ctaLabel: String {
@@ -122,7 +123,7 @@ final class PaywallViewModel: PaywallViewModelProtocol {
             analytics.capture(.paywallViewed(source: source))
         }
         await storeKitManager.loadProducts()
-        selectedUserPlans = storeKitManager.currentPlan == .standard ? .yearly : storeKitManager.currentPlan
+        selectedPlan = storeKitManager.currentPlan == .standard ? .yearly : storeKitManager.currentPlan
         selectedProduct = storeKitManager.yearlyProduct
     }
 
@@ -149,11 +150,7 @@ final class PaywallViewModel: PaywallViewModelProtocol {
             if success {
                 analytics.capture(.paywallPurchaseSucceeded(productId: product.id))
             } else {
-                // false from StoreKit means userCancelled / pending - not a true error.
-                analytics.capture(.paywallPurchaseFailed(
-                    productId: product.id,
-                    reason: "cancelled_or_pending"
-                ))
+                analytics.capture(.paywallPurchaseCancelled(productId: product.id))
             }
             return success
         } catch {
@@ -165,6 +162,10 @@ final class PaywallViewModel: PaywallViewModelProtocol {
             showError = true
             return false
         }
+    }
+
+    func dismissPaywall() {
+        analytics.capture(.paywallDismissed)
     }
 
     func restorePurchases() async {
