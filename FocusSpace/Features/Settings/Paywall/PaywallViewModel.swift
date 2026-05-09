@@ -9,14 +9,6 @@ import Foundation
 import StoreKit
 import Combine
 
-enum UserPlans: String, CaseIterable, Identifiable {
-    case standard = "Standard"
-    case monthly = "Monthly"
-    case yearly = "Yearly"
-
-    var id: String { self.rawValue }
-}
-
 @MainActor
 protocol PaywallViewModelProtocol: ObservableObject {
     var selectedProduct: Product? { get }
@@ -31,9 +23,6 @@ protocol PaywallViewModelProtocol: ObservableObject {
     var isStoreLoading: Bool { get }
     var monthlyProduct: Product? { get }
     var yearlyProduct: Product? { get }
-    /// Resolved variant of the paywall, driven by the `paywall_v2` feature flag.
-    /// Defaults to `.v1` when the flag is off or analytics is disabled.
-    var variant: PaywallVariant { get }
 
     func loadInitialData() async
     func onPlanChanged(_ newPlan: UserPlans)
@@ -44,12 +33,6 @@ protocol PaywallViewModelProtocol: ObservableObject {
     func planLabel(for product: Product) -> String
     func periodLabel(for product: Product) -> String
     func savingsPercentage(yearly: Decimal, monthly: Decimal) -> Int
-}
-
-/// A/B variant resolved from the `paywall_v2` PostHog feature flag.
-enum PaywallVariant: String {
-    case v1
-    case v2
 }
 
 @MainActor
@@ -63,11 +46,12 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     private var hasCapturedView = false
 
     @Published var selectedProduct: Product?
-    @Published var selectedPlan: UserPlans = .standard
+    @Published var selectedPlan: UserPlans = .standard {
+        didSet { onPlanChanged(selectedPlan) }
+    }
     @Published var isPurchasing = false
     @Published var showError = false
     @Published var errorMessage = ""
-    @Published var variant: PaywallVariant = .v1
 
     var products: [Product] { storeKitManager.products }
     var isStoreLoading: Bool { storeKitManager.isLoading }
@@ -112,19 +96,12 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     // MARK: - Actions
 
     func loadInitialData() async {
-        // Force a fresh flag fetch before reading - on cold launch the cached
-        // value may be `false` because PostHog hasn't fetched flags yet, which
-        // would silently bias the A/B test toward `v1`.
-        await analytics.reloadFeatureFlags()
-        variant = analytics.isFeatureEnabled("paywall_v2") ? .v2 : .v1
-
         if !hasCapturedView {
             hasCapturedView = true
             analytics.capture(.paywallViewed(source: source))
         }
         await storeKitManager.loadProducts()
-        selectedPlan = storeKitManager.currentPlan == .standard ? .yearly : storeKitManager.currentPlan
-        selectedProduct = storeKitManager.yearlyProduct
+        selectedPlan = storeKitManager.currentPlan
     }
 
     func onPlanChanged(_ newPlan: UserPlans) {
@@ -139,7 +116,7 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     }
 
     func purchaseSelectedProduct() async -> Bool {
-        guard let product = selectedProduct else { return false }
+        guard !isPurchasing, let product = selectedProduct else { return false }
         isPurchasing = true
         defer { isPurchasing = false }
 
@@ -169,7 +146,12 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     }
 
     func restorePurchases() async {
-        await storeKitManager.restorePurchases()
+        do {
+            try await storeKitManager.restorePurchases()
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
     }
 
     func retryLoadProducts() async {
@@ -191,9 +173,9 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     }
 
     func savingsPercentage(yearly: Decimal, monthly: Decimal) -> Int {
-        let yearlyTotal = NSDecimalNumber(decimal: yearly).doubleValue
-        let monthlyTotal = NSDecimalNumber(decimal: monthly).doubleValue * 12
-        guard monthlyTotal > 0 else { return 0 }
-        return Int(((monthlyTotal - yearlyTotal) / monthlyTotal) * 100)
+        let annualizedMonthly = monthly * 12
+        guard annualizedMonthly > 0 else { return 0 }
+        let savings = ((annualizedMonthly - yearly) / annualizedMonthly) * 100
+        return NSDecimalNumber(decimal: savings).intValue
     }
 }
