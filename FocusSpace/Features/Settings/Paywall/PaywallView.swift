@@ -12,10 +12,10 @@ import StoreKit
 
 struct PaywallView<VM: PaywallViewModelProtocol>: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var vm: VM
+    @ObservedObject private var vm: VM
 
     init(vm: VM) {
-        _vm = StateObject(wrappedValue: vm)
+        _vm = ObservedObject(wrappedValue: vm)
     }
 
     var body: some View {
@@ -29,7 +29,11 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
 
                         Spacer().frame(height: 16)
 
-                        if vm.products.isEmpty && !vm.isStoreLoading {
+                        if vm.isStoreLoading {
+                            Spacer().frame(height: 48)
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                        } else if vm.products.isEmpty {
                             ErrorStateView(
                                 systemImage: AppConstants.Icon.wifiSlash,
                                 title: AppString.paywallErrorTitle,
@@ -72,9 +76,6 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
             }
             .task {
                 await vm.loadInitialData()
-            }
-            .onChange(of: vm.selectedPlan) { _, newPlan in
-                vm.onPlanChanged(newPlan)
             }
             .analyticsScreen(AppConstants.Analytics.Screen.paywall)
         }
@@ -315,22 +316,23 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
                             .font(AppTypography.buttonLarge)
                     }
                 }
-                .foregroundStyle(vm.isStandardSelected
+                .foregroundStyle(vm.isStandardSelected || vm.isActivePlan
                     ? AppColors.secondaryText
                     : AppColors.primaryRevert)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(vm.isStandardSelected
+                        .fill(vm.isStandardSelected || vm.isActivePlan
                             ? AppColors.primaryText.opacity(0.15)
                             : AppColors.primaryText)
                 )
             }
-            .disabled(vm.isStandardSelected || vm.selectedProduct == nil || vm.isPurchasing)
+            .disabled(vm.isStandardSelected || vm.isActivePlan || vm.selectedProduct == nil || vm.isPurchasing)
+            .allowsHitTesting(!vm.isPurchasing)
             .buttonStyle(.plain)
 
-            if !vm.isStandardSelected {
+            if !vm.isStandardSelected && !vm.isActivePlan {
                 Text(AppString.paywallAutoRenewDisclaimer)
                     .font(AppTypography.caption2)
                     .foregroundStyle(AppColors.secondaryText)
