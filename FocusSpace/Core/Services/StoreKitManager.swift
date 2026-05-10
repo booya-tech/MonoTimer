@@ -65,7 +65,8 @@ final class StoreKitManager: ObservableObject {
 
     /// Fetches product metadata (price, display name) from the App Store
     func loadProducts() async {
-        guard products.isEmpty else { return }
+        // if there's an error or product is empty, always re-fetch
+        guard products.isEmpty || errorMessage != nil else { return }
         isLoading = true
         defer { isLoading = false }
 
@@ -96,14 +97,12 @@ final class StoreKitManager: ObservableObject {
             let transaction = try checkVerified(verification)
             await transaction.finish()
             await updatePurchasedProducts()
-            return true
 
+            return true
         case .userCancelled:
             return false
-
         case .pending:
             return false
-
         @unknown default:
             return false
         }
@@ -137,20 +136,24 @@ final class StoreKitManager: ObservableObject {
     /// Iterates current entitlements to determine active subscriptions,
     /// then syncs the result with AppPreferences.isPremiumUser
     func updatePurchasedProducts() async {
-        var purchased: Set<String> = []
+        var active: Set<String> = []
+        var revoked: Set<String> = []
 
         for await result in Transaction.currentEntitlements {
             do {
                 let transaction = try checkVerified(result)
+                await transaction.finish()
                 if transaction.revocationDate == nil {
-                    purchased.insert(transaction.productID)
+                    active.insert(transaction.productID)
+                } else {
+                    revoked.insert(transaction.productID)
                 }
             } catch {
                 Logger.log("Unverified entitlement: \(error.localizedDescription)")
             }
         }
 
-        purchasedProductIDs = purchased
+        purchasedProductIDs = active
         preferences.isPremiumUser = hasActiveSubscription
     }
 
@@ -159,28 +162,48 @@ final class StoreKitManager: ObservableObject {
     /// Listens for external transaction changes: renewals, refunds,
     /// family sharing, Ask to Buy approvals
     private func listenForTransactions() -> Task<Void, Error> {
-        Task.detached {
+        Task { [weak self] in
             for await result in Transaction.updates {
+                guard let self else { return }
                 do {
-                    let transaction = try await self.checkVerified(result)
+                    let transaction = try self.checkVerified(result)
                     await transaction.finish()
                     await self.updatePurchasedProducts()
                     await self.captureIfRenewal(transaction)
                 } catch {
                     Logger.log("Unverified transaction: \(error.localizedDescription)")
                 }
-            }
+            } 
         }
     }
 
-    /// `Transaction.updates` fires for initial purchases, renewals, refunds,
-    /// revocations, and family-sharing changes. We only emit
-    /// `subscription_renewed` when this is genuinely a renewal of a still-active
-    /// subscription. Initial purchases are already captured by the paywall flow.
-    private func captureIfRenewal(_ transaction: Transaction) {
-        guard transaction.revocationDate == nil,
-              transaction.purchaseDate != transaction.originalPurchaseDate else { return }
-        analytics.capture(.subscriptionRenewed(productId: transaction.productID))
+    /// Emits `subscription_renewed` only for genuine auto-renewals of active
+    /// subscriptions.
+    private func captureIfRenewal(_ transaction: Transaction) async {
+        // no refund requested
+        guard transaction.revocationDate == nil else { return }
+        
+        guard let product = products.first(where: { $0.id == transaction.productID }),
+              let subscription = product.subscription else { return }
+        
+        do {
+            let statuses = try await subscription.status
+            
+            let isActiveRenewal = statuses.contains { statusItem in
+                guard case .verified(let renewalInfo) = statusItem.renewalInfo,
+                      case .verified = statusItem.transaction else { return false }
+                
+                return statusItem.state == .subscribed
+                && renewalInfo.currentProductID == transaction.productID
+                && transaction.purchaseDate != transaction.originalPurchaseDate
+            }
+            
+            if isActiveRenewal {
+                analytics.capture(.subscriptionRenewed(productId: transaction.productID))
+            }
+        } catch {
+            Logger.log("Failed to fetch subscription status for renewal check: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Verification
