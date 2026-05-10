@@ -68,6 +68,7 @@ final class PaywallViewModel: PaywallViewModelProtocol {
 
     var ctaLabel: String {
         if isStandardSelected { return AppString.paywallCurrentPlan }
+        if isActivePlan { return AppString.paywallActivePlan }
         guard let product = selectedProduct else { return AppString.paywallSubscribe }
         return AppString.paywallGetPremium(product.displayPrice)
     }

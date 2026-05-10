@@ -55,6 +55,7 @@ enum AppString {
     static let paywallSubscribe = "Subscribe"
     static let paywallActiveBadge = "Active"
     static let paywallCurrentPlan = "Current Plan"
+    static let paywallActivePlan = "Already Subscribed"
     static func paywallSaveLabel(_ percent: Int) -> String {
         "Save \(percent)% vs monthly"
     }

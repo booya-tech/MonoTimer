@@ -316,23 +316,23 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
                             .font(AppTypography.buttonLarge)
                     }
                 }
-                .foregroundStyle(vm.isStandardSelected
+                .foregroundStyle(vm.isStandardSelected || vm.isActivePlan
                     ? AppColors.secondaryText
                     : AppColors.primaryRevert)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(vm.isStandardSelected
+                        .fill(vm.isStandardSelected || vm.isActivePlan
                             ? AppColors.primaryText.opacity(0.15)
                             : AppColors.primaryText)
                 )
             }
-            .disabled(vm.isStandardSelected || vm.selectedProduct == nil || vm.isPurchasing)
+            .disabled(vm.isStandardSelected || vm.isActivePlan || vm.selectedProduct == nil || vm.isPurchasing)
             .allowsHitTesting(!vm.isPurchasing)
             .buttonStyle(.plain)
 
-            if !vm.isStandardSelected {
+            if !vm.isStandardSelected && !vm.isActivePlan {
                 Text(AppString.paywallAutoRenewDisclaimer)
                     .font(AppTypography.caption2)
                     .foregroundStyle(AppColors.secondaryText)

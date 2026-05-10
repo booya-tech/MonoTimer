@@ -65,7 +65,8 @@ final class StoreKitManager: ObservableObject {
 
     /// Fetches product metadata (price, display name) from the App Store
     func loadProducts() async {
-        guard products.isEmpty else { return }
+        // if there's an error or product is empty, always re-fetch
+        guard products.isEmpty || errorMessage != nil else { return }
         isLoading = true
         defer { isLoading = false }
 
@@ -95,8 +96,7 @@ final class StoreKitManager: ObservableObject {
         case .success(let verification):
             let transaction = try checkVerified(verification)
             await transaction.finish()
-            purchasedProductIDs.insert(product.id)
-            preferences.isPremiumUser = true
+            await updatePurchasedProducts()
 
             return true
         case .userCancelled:
@@ -142,6 +142,7 @@ final class StoreKitManager: ObservableObject {
         for await result in Transaction.currentEntitlements {
             do {
                 let transaction = try checkVerified(result)
+                await transaction.finish()
                 if transaction.revocationDate == nil {
                     active.insert(transaction.productID)
                 } else {
@@ -156,20 +157,16 @@ final class StoreKitManager: ObservableObject {
         preferences.isPremiumUser = hasActiveSubscription
     }
 
-    deinit {
-        transactionListener?.cancel()
-    }
-
     // MARK: - Transaction Listener
 
     /// Listens for external transaction changes: renewals, refunds,
     /// family sharing, Ask to Buy approvals
     private func listenForTransactions() -> Task<Void, Error> {
-        Task.detached { [weak self] in
+        Task { [weak self] in
             for await result in Transaction.updates {
                 guard let self else { return }
                 do {
-                    let transaction = try await self.checkVerified(result)
+                    let transaction = try self.checkVerified(result)
                     await transaction.finish()
                     await self.updatePurchasedProducts()
                     await self.captureIfRenewal(transaction)
@@ -180,14 +177,33 @@ final class StoreKitManager: ObservableObject {
         }
     }
 
-    /// `Transaction.updates` fires for initial purchases, renewals, refunds,
-    /// revocations, and family-sharing changes. We only emit
-    /// `subscription_renewed` when this is genuinely a renewal of a still-active
-    /// subscription. Initial purchases are already captured by the paywall flow.
-    private func captureIfRenewal(_ transaction: Transaction) {
-        guard transaction.revocationDate == nil,
-              transaction.purchaseDate != transaction.originalPurchaseDate else { return }
-        analytics.capture(.subscriptionRenewed(productId: transaction.productID))
+    /// Emits `subscription_renewed` only for genuine auto-renewals of active
+    /// subscriptions.
+    private func captureIfRenewal(_ transaction: Transaction) async {
+        // no refund requested
+        guard transaction.revocationDate == nil else { return }
+        
+        guard let product = products.first(where: { $0.id == transaction.productID }),
+              let subscription = product.subscription else { return }
+        
+        do {
+            let statuses = try await subscription.status
+            
+            let isActiveRenewal = statuses.contains { statusItem in
+                guard case .verified(let renewalInfo) = statusItem.renewalInfo,
+                      case .verified = statusItem.transaction else { return false }
+                
+                return statusItem.state == .subscribed
+                && renewalInfo.currentProductID == transaction.productID
+                && transaction.purchaseDate != transaction.originalPurchaseDate
+            }
+            
+            if isActiveRenewal {
+                analytics.capture(.subscriptionRenewed(productId: transaction.productID))
+            }
+        } catch {
+            Logger.log("Failed to fetch subscription status for renewal check: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Verification
