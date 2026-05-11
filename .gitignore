@@ -92,3 +92,6 @@ playground.xcworkspace
 .cursor/commands/
 
 .cursor/
+
+# Claude Code
+CLAUDE.md
