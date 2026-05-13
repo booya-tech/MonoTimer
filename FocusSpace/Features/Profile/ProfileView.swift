@@ -139,7 +139,7 @@ struct ProfileView: View {
                 Button {
                     Task {
                         isRestoring = true
-                        await storeKit.restorePurchases()
+                        try await storeKit.restorePurchases()
                         isRestoring = false
                     }
                 } label: {

@@ -96,7 +96,11 @@ final class StoreKitManager: ObservableObject {
         case .success(let verification):
             let transaction = try checkVerified(verification)
             await transaction.finish()
-            await updatePurchasedProducts()
+            // Directly unlock from the verified transaction. Avoids a StoreKit2
+            // timing issue where Transaction.currentEntitlements hasn't propagated
+            // the new subscription yet after finish() — common in production.
+            purchasedProductIDs.insert(transaction.productID)
+            preferences.isPremiumUser = true
 
             return true
         case .userCancelled:
@@ -110,25 +114,31 @@ final class StoreKitManager: ObservableObject {
 
     // MARK: - Restore
 
-    /// Syncs with the App Store to restore any previously purchased subscriptions
-    func restorePurchases() async {
+    /// Syncs with the App Store to restore any previously purchased subscriptions.
+    /// Always checks current entitlements even if the server sync fails (cached data).
+    /// Throws if AppStore.sync() fails so the caller can surface an error to the user.
+    func restorePurchases() async throws {
         isLoading = true
         defer { isLoading = false }
 
         let preRestoreIDs = purchasedProductIDs
+        var syncError: Error?
 
         do {
             try await AppStore.sync()
         } catch {
+            syncError = error
             Logger.log("Restore failed: \(error.localizedDescription)")
-            errorMessage = "Unable to restore purchases. Check your connection."
         }
+
         await updatePurchasedProducts()
 
         let restored = purchasedProductIDs.subtracting(preRestoreIDs)
         for productID in restored {
             analytics.capture(.purchaseRestored(productId: productID))
         }
+
+        if let error = syncError { throw error }
     }
 
     // MARK: - Entitlement Check
