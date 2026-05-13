@@ -20,6 +20,8 @@ struct RootView: View {
         Group {
             if appViewModel.isLoading {
               SplashScreenView()
+            } else if appViewModel.isUpdateRequired {
+                ForceUpdateView(appStoreURL: AppUpdateService.shared.appStoreURL)
             } else if !preferences.hasCompletedOnboarding {
                 OnboardingView()
             } else if appViewModel.isAuthenticated {
@@ -37,6 +39,9 @@ struct RootView: View {
         .onChange(of: scenePhase) { (_, newPhase) in
             if newPhase == .active {
                 Task { await storeKitManager.updatePurchasedProducts() }
+                Task {
+                    appViewModel.isUpdateRequired = await AppUpdateService.shared.checkForUpdate()
+                }
             }
         }
         .fullScreenCover(isPresented: Binding(

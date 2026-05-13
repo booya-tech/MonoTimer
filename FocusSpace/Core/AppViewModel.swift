@@ -14,6 +14,7 @@ final class AppViewModel: NSObject,ObservableObject {
     @Published var authService = AuthService()
     @Published var notificationManager = NotificationManager.shared
     @Published var isLoading = true
+    @Published var isUpdateRequired = false
 
     private let analytics: AnalyticsService
     private var cancellables = Set<AnyCancellable>()
@@ -40,6 +41,8 @@ final class AppViewModel: NSObject,ObservableObject {
                         await self?.requestNotificationPermissions()
                         await self?.scheduleDailyReminders()
                     }
+                    // Check for a required App Store update before showing any UI.
+                    self?.isUpdateRequired = await AppUpdateService.shared.checkForUpdate()
                     // small delay for smooth transition
                     try? await Task.sleep(nanoseconds: 500_000_000)
                     // show appropriate view based on authentication state

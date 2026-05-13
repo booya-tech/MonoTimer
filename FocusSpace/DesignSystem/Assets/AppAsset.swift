@@ -30,6 +30,7 @@ public enum AppAsset {
     // MARK: Images (img_)
     public enum Image {
         public static let onboardingGhost = "img_onboarding_ghost"
+        public static let ghostAppForceupdate = "img_ghost_app_forceupdate"
     }
 
     // MARK: Backgrounds (bg_)

@@ -92,6 +92,15 @@ enum AppString {
     static let paywallPrivacy = "Privacy"
     static let paywallSeparator = "|"
 
+    // Force Update View
+    static let forceUpdateTitle = "Update Required"
+    static let forceUpdateMessage = "A critical update is available.\nPlease update MonoTimer to continue."
+    static let forceUpdateCTA = "Update Now"
+
+    // Error View (DesignSystem component)
+    static let errorViewTitle = "Something went wrong"
+    static let errorViewRetry = "Try Again"
+
     // Auth View
     enum Auth {
         static let createAccount = "Create an account"
