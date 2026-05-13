@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "ghost_app_forceupdate.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

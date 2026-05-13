@@ -27,7 +27,7 @@ struct ErrorView: View {
             
             // Error Message
             VStack(spacing: 8) {
-                Text("Something went wrong")
+                Text(AppString.errorViewTitle)
                     .font(AppTypography.title)
                     .foregroundColor(AppColors.primaryText)
                 
@@ -50,7 +50,7 @@ struct ErrorView: View {
             
             // Retry Button (if recoverable)
             if error.isRecoverable, let retryAction = retryAction {
-                PrimaryButton(title: "Try Again") {
+                PrimaryButton(title: AppString.errorViewRetry) {
                     retryAction()
                 }
                 .padding(.horizontal, 32)
