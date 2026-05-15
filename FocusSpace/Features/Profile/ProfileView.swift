@@ -18,6 +18,8 @@ struct ProfileView: View {
     @State private var showingSignOutAlert = false
     @State private var showPaywall = false
     @State private var isRestoring = false
+    @State private var showRestoreErrorAlert = false
+    @State private var restoreErrorMessage = ""
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -72,6 +74,11 @@ struct ProfileView: View {
             }
         } message: {
             Text(AppString.profileViewSignOutTitle)
+        }
+        .alert(AppString.paywallAlertError, isPresented: $showRestoreErrorAlert) {
+            Button(AppString.ok) {}
+        } message: {
+            Text(restoreErrorMessage)
         }
     }
 
@@ -139,8 +146,13 @@ struct ProfileView: View {
                 Button {
                     Task {
                         isRestoring = true
-                        try await storeKit.restorePurchases()
-                        isRestoring = false
+                        defer { isRestoring = false }
+                        do {
+                            try await storeKit.restorePurchases()
+                        } catch {
+                            restoreErrorMessage = error.localizedDescription
+                            showRestoreErrorAlert = true
+                        }
                     }
                 } label: {
                     HStack {

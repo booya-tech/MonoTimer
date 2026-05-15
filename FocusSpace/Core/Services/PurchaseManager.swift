@@ -42,10 +42,11 @@ final class PurchaseManager: ObservableObject {
 
     // MARK: - Init
 
-    private init() {
-        Task { await loadOfferings() }
-        Task { await refreshCustomerInfo() }
-    }
+    // Side-effect free: API calls are kicked off from `FocusSpaceApp` after
+    // `configure()` runs so we never touch `Purchases.shared` before the SDK
+    // is configured (the `static let shared` initializer fires before
+    // `FocusSpaceApp.init()`'s body).
+    private init() {}
 
     // MARK: - Configure
 
@@ -116,6 +117,29 @@ final class PurchaseManager: ObservableObject {
             apply(customerInfo: customerInfo)
         } catch {
             Logger.log("Failed to refresh RC customer info: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Identity
+
+    // Link RC identity to the Supabase user so entitlements follow the
+    // account across devices instead of staying on the anonymous
+    // `$RCAnonymousID` that is per-install.
+    func logIn(userId: String) async {
+        do {
+            let result = try await Purchases.shared.logIn(userId)
+            apply(customerInfo: result.customerInfo)
+        } catch {
+            Logger.log("Failed to RC logIn: \(error.localizedDescription)")
+        }
+    }
+
+    func logOut() async {
+        do {
+            let customerInfo = try await Purchases.shared.logOut()
+            apply(customerInfo: customerInfo)
+        } catch {
+            Logger.log("Failed to RC logOut: \(error.localizedDescription)")
         }
     }
 
