@@ -137,8 +137,12 @@ final class PaywallViewModel: PaywallViewModelProtocol {
                 productId: productId,
                 reason: error.localizedDescription
             ))
-            errorMessage = error.localizedDescription
-            showError = true
+            // Suppress cancellation / payment-pending so they don't surface
+            // as user-visible alerts (mapped to nil by userFacingMessage).
+            if let message = PurchaseManager.userFacingMessage(for: error) {
+                errorMessage = message
+                showError = true
+            }
             return false
         }
     }
@@ -151,8 +155,10 @@ final class PaywallViewModel: PaywallViewModelProtocol {
         do {
             try await purchaseManager.restorePurchases()
         } catch {
-            errorMessage = error.localizedDescription
-            showError = true
+            if let message = PurchaseManager.userFacingMessage(for: error) {
+                errorMessage = message
+                showError = true
+            }
         }
     }
 

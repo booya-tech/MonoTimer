@@ -10,8 +10,19 @@
 import Foundation
 import RevenueCat
 
+enum PurchaseError: LocalizedError {
+    case notConfigured
+
+    var errorDescription: String? {
+        switch self {
+        case .notConfigured:
+            return AppString.paywallErrorSubTitle
+        }
+    }
+}
+
 @MainActor
-final class PurchaseManager: ObservableObject {
+final class PurchaseManager: NSObject, ObservableObject {
     static let shared = PurchaseManager()
 
     @Published private(set) var packages: [Package] = []
@@ -34,9 +45,12 @@ final class PurchaseManager: ObservableObject {
         packages.first { $0.storeProduct.productIdentifier == AppConstants.StoreKit.premiumYearly }
     }
 
+    // Prefer yearly when both are active so a plan-switch (Apple's
+    // upgrade/downgrade flow can briefly leave both subscriptions active)
+    // doesn't flicker the UI between Monthly and Yearly labels.
     var currentPlan: UserPlans {
-        if purchasedProductIDs.contains(AppConstants.StoreKit.premiumMonthly) { return .monthly }
         if purchasedProductIDs.contains(AppConstants.StoreKit.premiumYearly) { return .yearly }
+        if purchasedProductIDs.contains(AppConstants.StoreKit.premiumMonthly) { return .monthly }
         return .standard
     }
 
@@ -46,10 +60,11 @@ final class PurchaseManager: ObservableObject {
     // `configure()` runs so we never touch `Purchases.shared` before the SDK
     // is configured (the `static let shared` initializer fires before
     // `FocusSpaceApp.init()`'s body).
-    private init() {}
+    private override init() { super.init() }
 
     // MARK: - Configure
 
+    @MainActor
     static func configure() {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String,
               !apiKey.isEmpty else {
@@ -60,6 +75,9 @@ final class PurchaseManager: ObservableObject {
         Purchases.logLevel = .debug
         #endif
         Purchases.configure(withAPIKey: apiKey)
+        // Receive server-side entitlement updates (renewals, refunds, billing
+        // retry exits) without waiting for a scenePhase refresh.
+        Purchases.shared.delegate = shared
     }
 
     // MARK: - Offerings
@@ -67,7 +85,11 @@ final class PurchaseManager: ObservableObject {
     func loadProducts() async { await loadOfferings() }
 
     func loadOfferings() async {
-        guard packages.isEmpty || errorMessage != nil else { return }
+        guard Purchases.isConfigured else {
+            errorMessage = PurchaseError.notConfigured.errorDescription
+            return
+        }
+        guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -84,6 +106,7 @@ final class PurchaseManager: ObservableObject {
     // MARK: - Purchase
 
     func purchase(_ package: Package) async throws -> Bool {
+        guard Purchases.isConfigured else { throw PurchaseError.notConfigured }
         isLoading = true
         defer { isLoading = false }
         let result = try await Purchases.shared.purchase(package: package)
@@ -97,6 +120,7 @@ final class PurchaseManager: ObservableObject {
     // MARK: - Restore
 
     func restorePurchases() async throws {
+        guard Purchases.isConfigured else { throw PurchaseError.notConfigured }
         isLoading = true
         defer { isLoading = false }
         let preRestoreIDs = purchasedProductIDs
@@ -112,6 +136,7 @@ final class PurchaseManager: ObservableObject {
     func updatePurchasedProducts() async { await refreshCustomerInfo() }
 
     func refreshCustomerInfo() async {
+        guard Purchases.isConfigured else { return }
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
             apply(customerInfo: customerInfo)
@@ -126,6 +151,7 @@ final class PurchaseManager: ObservableObject {
     // account across devices instead of staying on the anonymous
     // `$RCAnonymousID` that is per-install.
     func logIn(userId: String) async {
+        guard Purchases.isConfigured else { return }
         do {
             let result = try await Purchases.shared.logIn(userId)
             apply(customerInfo: result.customerInfo)
@@ -135,6 +161,7 @@ final class PurchaseManager: ObservableObject {
     }
 
     func logOut() async {
+        guard Purchases.isConfigured else { return }
         do {
             let customerInfo = try await Purchases.shared.logOut()
             apply(customerInfo: customerInfo)
@@ -145,10 +172,51 @@ final class PurchaseManager: ObservableObject {
 
     // MARK: - Apply
 
+    // Writes `AppPreferences.isPremiumUser` (UserDefaults) as the canonical
+    // gating flag. That value is read synchronously across the app — so a
+    // launch that occurs while offline, or before the first `refreshCustomerInfo`
+    // completes, will show the previous-session cached state. This is the
+    // intended grace window; downgrades take effect on the next successful
+    // server hit (refresh / scenePhase / delegate push).
     private func apply(customerInfo: CustomerInfo) {
         let isPremium = customerInfo.entitlements["premium"]?.isActive == true
-        let activeID = customerInfo.entitlements["premium"]?.productIdentifier
-        purchasedProductIDs = isPremium ? (activeID.map { [$0] } ?? []) : []
+        // `activeSubscriptions` preserves all currently-active product IDs so
+        // `currentPlan` can choose between them when a plan-switch leaves both
+        // monthly and yearly active briefly. The `entitlement.productIdentifier`
+        // alone collapses to one.
+        purchasedProductIDs = isPremium ? customerInfo.activeSubscriptions : []
         preferences.isPremiumUser = isPremium
+    }
+
+    // MARK: - Error mapping
+
+    // Returns a user-facing string for an error thrown by a RC API, or `nil`
+    // when the error should be swallowed silently (user cancellation, payment
+    // pending on SCA / Ask-to-Buy). Falls back to `localizedDescription` for
+    // anything not explicitly mapped.
+    static func userFacingMessage(for error: Error) -> String? {
+        let nsError = error as NSError
+        if let code = ErrorCode(rawValue: nsError.code) {
+            switch code {
+            case .purchaseCancelledError, .paymentPendingError:
+                return nil
+            default:
+                break
+            }
+        }
+        return error.localizedDescription
+    }
+}
+
+// MARK: - PurchasesDelegate
+
+extension PurchaseManager: PurchasesDelegate {
+    // Called by the RC SDK from a non-isolated context when CustomerInfo
+    // changes server-side (renewal, refund, revocation). Hop to the main
+    // actor before mutating `@Published` state.
+    nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+        Task { @MainActor in
+            self.apply(customerInfo: customerInfo)
+        }
     }
 }

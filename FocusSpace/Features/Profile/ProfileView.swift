@@ -150,8 +150,10 @@ struct ProfileView: View {
                         do {
                             try await storeKit.restorePurchases()
                         } catch {
-                            restoreErrorMessage = error.localizedDescription
-                            showRestoreErrorAlert = true
+                            if let message = PurchaseManager.userFacingMessage(for: error) {
+                                restoreErrorMessage = message
+                                showRestoreErrorAlert = true
+                            }
                         }
                     }
                 } label: {
