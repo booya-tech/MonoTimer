@@ -8,7 +8,7 @@
 //
 
 import SwiftUI
-import StoreKit
+import RevenueCat
 
 struct PaywallView<VM: PaywallViewModelProtocol>: View {
     @Environment(\.dismiss) private var dismiss
@@ -193,22 +193,22 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
         }
     }
 
-    private func premiumPlanCardContent(for product: Product) -> some View {
+    private func premiumPlanCardContent(for product: Package) -> some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(vm.planLabel(for: product))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(AppColors.primaryRevert)
 
-                Text(product.displayPrice + " / " + vm.periodLabel(for: product))
+                Text(product.storeProduct.localizedPriceString + " / " + vm.periodLabel(for: product))
                     .font(AppTypography.subheadline)
                     .foregroundStyle(AppColors.primaryRevert.opacity(0.7))
 
-                if product.id == AppConstants.StoreKit.premiumYearly,
+                if product.storeProduct.productIdentifier == AppConstants.StoreKit.premiumYearly,
                    let monthly = vm.monthlyProduct {
                     let savings = vm.savingsPercentage(
-                        yearly: product.price,
-                        monthly: monthly.price
+                        yearly: product.storeProduct.price,
+                        monthly: monthly.storeProduct.price
                     )
                     Text(AppString.paywallSaveLabel(savings))
                         .font(AppTypography.caption)

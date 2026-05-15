@@ -11,12 +11,13 @@ import GoogleSignIn
 @main
 struct FocusSpaceApp: App {
     @StateObject private var appViewModel: AppViewModel
-    @ObservedObject private var storeKitManager = StoreKitManager.shared
+    @ObservedObject private var purchaseManager = PurchaseManager.shared
 
     init() {
         // Configure analytics before any ViewModel is constructed so the
         // `AppViewModel` auth observer can immediately call `identify`.
         AnalyticsBootstrap.configure()
+        PurchaseManager.configure()
         AnalyticsBootstrap.shared.capture(.appLaunched)
         _appViewModel = StateObject(wrappedValue: AppViewModel())
     }
@@ -26,7 +27,7 @@ struct FocusSpaceApp: App {
              RootView()
                 .environmentObject(appViewModel)
                 .environmentObject(AppPreferences.shared)
-                .environmentObject(storeKitManager)
+                .environmentObject(purchaseManager)
                 .environment(\.analytics, AnalyticsBootstrap.shared)
                 .onOpenURL { url in
                     if url.scheme == AppConstants.URLs.deepLinkScheme {

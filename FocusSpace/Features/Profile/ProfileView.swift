@@ -14,7 +14,7 @@ struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var timerViewModel: TimerViewModel
     @StateObject private var habitStreaksVM = HabitStreaksBoardViewModel()
-    @ObservedObject private var storeKit = StoreKitManager.shared
+    @ObservedObject private var storeKit = PurchaseManager.shared
     @State private var showingSignOutAlert = false
     @State private var showPaywall = false
     @State private var isRestoring = false

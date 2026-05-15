@@ -62,7 +62,7 @@ final class AppViewModel: NSObject,ObservableObject {
                     Task { await SessionTagStore.shared.syncNow() }
                     // Re-validate entitlements so a returning premium subscriber
                     // doesn't need a background/foreground cycle to see premium features.
-                    Task { await StoreKitManager.shared.updatePurchasedProducts() }
+                    Task { await PurchaseManager.shared.refreshCustomerInfo() }
                 } else if self.lastIdentifiedUserId != nil {
                     self.analytics.capture(.authSignedOut)
                     self.analytics.reset()
