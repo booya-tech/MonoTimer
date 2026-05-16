@@ -474,7 +474,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpaceWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 45C3927649;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FocusSpaceWidgets/Info.plist;
@@ -505,7 +505,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpaceWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 45C3927649;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FocusSpaceWidgets/Info.plist;
@@ -659,7 +659,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpace/FocusSpace.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 45C3927649;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -679,7 +679,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.7;
+				MARKETING_VERSION = 1.4.8;
 				POSTHOG_API_KEY = "$(POSTHOG_API_KEY)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.boopannachai.MonoTimer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -705,7 +705,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpace/FocusSpace.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 45C3927649;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -725,7 +725,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.7;
+				MARKETING_VERSION = 1.4.8;
 				POSTHOG_API_KEY = "$(POSTHOG_API_KEY)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.boopannachai.MonoTimer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -888,7 +888,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpace/FocusSpace.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 45C3927649;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -908,7 +908,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.7;
+				MARKETING_VERSION = 1.4.8;
 				POSTHOG_API_KEY = "$(POSTHOG_API_KEY)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.boopannachai.MonoTimer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -934,7 +934,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusSpaceWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 45C3927649;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FocusSpaceWidgets/Info.plist;
