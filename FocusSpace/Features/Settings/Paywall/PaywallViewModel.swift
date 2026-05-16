@@ -181,9 +181,11 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     }
 
     func savingsPercentage(yearly: Decimal, monthly: Decimal) -> Int {
-        let annualizedMonthly = monthly * 12
+        let yearlyValue = NSDecimalNumber(decimal: yearly).doubleValue
+        let monthlyValue = NSDecimalNumber(decimal: monthly).doubleValue
+        let annualizedMonthly = monthlyValue * 12
         guard annualizedMonthly > 0 else { return 0 }
-        let savings = ((annualizedMonthly - yearly) / annualizedMonthly) * 100
-        return NSDecimalNumber(decimal: savings).intValue
+        let savings = ((annualizedMonthly - yearlyValue) / annualizedMonthly) * 100
+        return max(0, Int(savings.rounded()))
     }
 }

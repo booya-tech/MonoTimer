@@ -210,9 +210,11 @@ struct PaywallView<VM: PaywallViewModelProtocol>: View {
                         yearly: product.storeProduct.price,
                         monthly: monthly.storeProduct.price
                     )
-                    Text(AppString.paywallSaveLabel(savings))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.primaryRevert.opacity(0.5))
+                    if savings > 0 {
+                        Text(AppString.paywallSaveLabel(savings))
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColors.primaryRevert.opacity(0.5))
+                    }
                 }
             }
         }
