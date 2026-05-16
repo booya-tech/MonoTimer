@@ -6,12 +6,12 @@
 //
 
 import Foundation
-import StoreKit
+import RevenueCat
 import Combine
 
 @MainActor
 protocol PaywallViewModelProtocol: ObservableObject {
-    var selectedProduct: Product? { get }
+    var selectedProduct: Package? { get }
     var selectedPlan: UserPlans { get set }
     var isPurchasing: Bool { get }
     var showError: Bool { get set }
@@ -19,10 +19,10 @@ protocol PaywallViewModelProtocol: ObservableObject {
     var isActivePlan: Bool { get }
     var isStandardSelected: Bool { get }
     var ctaLabel: String { get }
-    var products: [Product] { get }
+    var products: [Package] { get }
     var isStoreLoading: Bool { get }
-    var monthlyProduct: Product? { get }
-    var yearlyProduct: Product? { get }
+    var monthlyProduct: Package? { get }
+    var yearlyProduct: Package? { get }
 
     func loadInitialData() async
     func onPlanChanged(_ newPlan: UserPlans)
@@ -30,14 +30,14 @@ protocol PaywallViewModelProtocol: ObservableObject {
     func restorePurchases() async
     func retryLoadProducts() async
     func dismissPaywall()
-    func planLabel(for product: Product) -> String
-    func periodLabel(for product: Product) -> String
+    func planLabel(for product: Package) -> String
+    func periodLabel(for product: Package) -> String
     func savingsPercentage(yearly: Decimal, monthly: Decimal) -> Int
 }
 
 @MainActor
 final class PaywallViewModel: PaywallViewModelProtocol {
-    private let storeKitManager: StoreKitManager
+    private let purchaseManager: PurchaseManager
     private let analytics: AnalyticsService
     /// Origin of the paywall presentation (e.g. "dashboard", "profile").
     /// Forwarded to `paywall_viewed` and the purchase funnel events.
@@ -45,7 +45,7 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     private var cancellable: AnyCancellable?
     private var hasCapturedView = false
 
-    @Published var selectedProduct: Product?
+    @Published var selectedProduct: Package?
     @Published var selectedPlan: UserPlans = .standard {
         didSet { onPlanChanged(selectedPlan) }
     }
@@ -53,13 +53,13 @@ final class PaywallViewModel: PaywallViewModelProtocol {
     @Published var showError = false
     @Published var errorMessage = ""
 
-    var products: [Product] { storeKitManager.products }
-    var isStoreLoading: Bool { storeKitManager.isLoading }
-    var monthlyProduct: Product? { storeKitManager.monthlyProduct }
-    var yearlyProduct: Product? { storeKitManager.yearlyProduct }
+    var products: [Package] { purchaseManager.packages }
+    var isStoreLoading: Bool { purchaseManager.isLoading }
+    var monthlyProduct: Package? { purchaseManager.monthlyProduct }
+    var yearlyProduct: Package? { purchaseManager.yearlyProduct }
 
     var isActivePlan: Bool {
-        selectedPlan == storeKitManager.currentPlan
+        selectedPlan == purchaseManager.currentPlan
     }
 
     var isStandardSelected: Bool {
@@ -70,25 +70,25 @@ final class PaywallViewModel: PaywallViewModelProtocol {
         if isStandardSelected { return AppString.paywallCurrentPlan }
         if isActivePlan { return AppString.paywallActivePlan }
         guard let product = selectedProduct else { return AppString.paywallSubscribe }
-        return AppString.paywallGetPremium(product.displayPrice)
+        return AppString.paywallGetPremium(product.storeProduct.localizedPriceString)
     }
 
     @MainActor
     init(
-        storeKitManager: StoreKitManager? = nil,
+        purchaseManager: PurchaseManager? = nil,
         analytics: AnalyticsService? = nil,
         source: String = "unknown"
     ) {
-        // Defaults resolved here because `StoreKitManager.shared` and
+        // Defaults resolved here because `PurchaseManager.shared` and
         // `AnalyticsBootstrap.shared` are `@MainActor`-isolated and default
         // expressions are evaluated in a nonisolated context.
-        self.storeKitManager = storeKitManager ?? .shared
+        self.purchaseManager = purchaseManager ?? .shared
         self.analytics = analytics ?? AnalyticsBootstrap.shared
         self.source = source
 
-        let storeKitManager = self.storeKitManager
+        let purchaseManager = self.purchaseManager
 
-        cancellable = storeKitManager.objectWillChange
+        cancellable = purchaseManager.objectWillChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
             }
@@ -101,8 +101,8 @@ final class PaywallViewModel: PaywallViewModelProtocol {
             hasCapturedView = true
             analytics.capture(.paywallViewed(source: source))
         }
-        await storeKitManager.loadProducts()
-        selectedPlan = storeKitManager.currentPlan
+        await purchaseManager.loadOfferings()
+        selectedPlan = purchaseManager.currentPlan
     }
 
     func onPlanChanged(_ newPlan: UserPlans) {
@@ -110,9 +110,9 @@ final class PaywallViewModel: PaywallViewModelProtocol {
         case .standard:
             selectedProduct = nil
         case .monthly:
-            selectedProduct = storeKitManager.monthlyProduct
+            selectedProduct = purchaseManager.monthlyProduct
         case .yearly:
-            selectedProduct = storeKitManager.yearlyProduct
+            selectedProduct = purchaseManager.yearlyProduct
         }
     }
 
@@ -121,23 +121,28 @@ final class PaywallViewModel: PaywallViewModelProtocol {
         isPurchasing = true
         defer { isPurchasing = false }
 
-        analytics.capture(.paywallPurchaseStarted(productId: product.id))
+        let productId = product.storeProduct.productIdentifier
+        analytics.capture(.paywallPurchaseStarted(productId: productId))
 
         do {
-            let success = try await storeKitManager.purchase(product)
+            let success = try await purchaseManager.purchase(product)
             if success {
-                analytics.capture(.paywallPurchaseSucceeded(productId: product.id))
+                analytics.capture(.paywallPurchaseSucceeded(productId: productId))
             } else {
-                analytics.capture(.paywallPurchaseCancelled(productId: product.id))
+                analytics.capture(.paywallPurchaseCancelled(productId: productId))
             }
             return success
         } catch {
             analytics.capture(.paywallPurchaseFailed(
-                productId: product.id,
+                productId: productId,
                 reason: error.localizedDescription
             ))
-            errorMessage = error.localizedDescription
-            showError = true
+            // Suppress cancellation / payment-pending so they don't surface
+            // as user-visible alerts (mapped to nil by userFacingMessage).
+            if let message = PurchaseManager.userFacingMessage(for: error) {
+                errorMessage = message
+                showError = true
+            }
             return false
         }
     }
@@ -148,27 +153,29 @@ final class PaywallViewModel: PaywallViewModelProtocol {
 
     func restorePurchases() async {
         do {
-            try await storeKitManager.restorePurchases()
+            try await purchaseManager.restorePurchases()
         } catch {
-            errorMessage = error.localizedDescription
-            showError = true
+            if let message = PurchaseManager.userFacingMessage(for: error) {
+                errorMessage = message
+                showError = true
+            }
         }
     }
 
     func retryLoadProducts() async {
-        await storeKitManager.loadProducts()
+        await purchaseManager.loadOfferings()
     }
 
     // MARK: - Display Helpers
 
-    func planLabel(for product: Product) -> String {
-        product.id == AppConstants.StoreKit.premiumYearly
+    func planLabel(for product: Package) -> String {
+        product.storeProduct.productIdentifier == AppConstants.StoreKit.premiumYearly
             ? AppString.paywallYearly
             : AppString.paywallMonthly
     }
 
-    func periodLabel(for product: Product) -> String {
-        product.id == AppConstants.StoreKit.premiumYearly
+    func periodLabel(for product: Package) -> String {
+        product.storeProduct.productIdentifier == AppConstants.StoreKit.premiumYearly
             ? AppString.paywallPeriodYear
             : AppString.paywallPeriodMonth
     }
