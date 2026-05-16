@@ -14,10 +14,12 @@ struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var timerViewModel: TimerViewModel
     @StateObject private var habitStreaksVM = HabitStreaksBoardViewModel()
-    @ObservedObject private var storeKit = StoreKitManager.shared
+    @ObservedObject private var storeKit = PurchaseManager.shared
     @State private var showingSignOutAlert = false
     @State private var showPaywall = false
     @State private var isRestoring = false
+    @State private var showRestoreErrorAlert = false
+    @State private var restoreErrorMessage = ""
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -72,6 +74,11 @@ struct ProfileView: View {
             }
         } message: {
             Text(AppString.profileViewSignOutTitle)
+        }
+        .alert(AppString.paywallAlertError, isPresented: $showRestoreErrorAlert) {
+            Button(AppString.ok) {}
+        } message: {
+            Text(restoreErrorMessage)
         }
     }
 
@@ -139,8 +146,15 @@ struct ProfileView: View {
                 Button {
                     Task {
                         isRestoring = true
-                        try await storeKit.restorePurchases()
-                        isRestoring = false
+                        defer { isRestoring = false }
+                        do {
+                            try await storeKit.restorePurchases()
+                        } catch {
+                            if let message = PurchaseManager.userFacingMessage(for: error) {
+                                restoreErrorMessage = message
+                                showRestoreErrorAlert = true
+                            }
+                        }
                     }
                 } label: {
                     HStack {

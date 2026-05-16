@@ -45,6 +45,7 @@ jobs:
           POSTHOG_API_KEY = ${{ secrets.DEV_POSTHOG_API_KEY }}
           GOOGLE_CLIENT_ID = ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_REVERSED_CLIENT_ID = ${{ secrets.GOOGLE_REVERSED_CLIENT_ID }}
+          REVENUECAT_API_KEY = ${{ secrets.DEV_REVENUECAT_API_KEY }}
           EOF
       
       - name: Run tests
@@ -79,6 +80,7 @@ jobs:
           POSTHOG_API_KEY = ${{ secrets.POSTHOG_API_KEY }}
           GOOGLE_CLIENT_ID = ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_REVERSED_CLIENT_ID = ${{ secrets.GOOGLE_REVERSED_CLIENT_ID }}
+          REVENUECAT_API_KEY = ${{ secrets.REVENUECAT_API_KEY }}
           EOF
       
       - name: Create API Key file

@@ -10,6 +10,7 @@ cd "${CI_PRIMARY_REPOSITORY_PATH}"
 # time a user taps "Continue with Google" (see GIDSignIn signInWithOptions:).
 : "${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is not set in the Xcode Cloud workflow environment}"
 : "${GOOGLE_REVERSED_CLIENT_ID:?GOOGLE_REVERSED_CLIENT_ID is not set in the Xcode Cloud workflow environment}"
+: "${REVENUECAT_API_KEY:?REVENUECAT_API_KEY is not set in the Xcode Cloud workflow environment}"
 
 # Create Config directory at repository root
 mkdir -p Config
@@ -27,6 +28,7 @@ SUPABASE_ANON_KEY = ${SUPABASE_ANON_KEY}
 POSTHOG_API_KEY = ${POSTHOG_API_KEY}
 GOOGLE_CLIENT_ID = ${GOOGLE_CLIENT_ID}
 GOOGLE_REVERSED_CLIENT_ID = ${GOOGLE_REVERSED_CLIENT_ID}
+REVENUECAT_API_KEY = ${REVENUECAT_API_KEY}
 EOF
 
 echo "✅ Created Secrets.Prod.xcconfig at ${CI_PRIMARY_REPOSITORY_PATH}/Config/Secrets.Prod.xcconfig"

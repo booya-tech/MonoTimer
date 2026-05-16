@@ -60,13 +60,17 @@ final class AppViewModel: NSObject,ObservableObject {
                     // Sync tags for the signed-in user (also seeds defaults
                     // on first sign-in). Fire-and-forget; failures are logged.
                     Task { await SessionTagStore.shared.syncNow() }
-                    // Re-validate entitlements so a returning premium subscriber
-                    // doesn't need a background/foreground cycle to see premium features.
-                    Task { await StoreKitManager.shared.updatePurchasedProducts() }
+                    // Link RC identity to the Supabase user id so entitlements
+                    // follow the account across devices instead of staying on
+                    // the per-install $RCAnonymousID. `logIn` also returns a
+                    // fresh CustomerInfo so this replaces the previous
+                    // `refreshCustomerInfo()` call.
+                    Task { await PurchaseManager.shared.logIn(userId: user.id.uuidString) }
                 } else if self.lastIdentifiedUserId != nil {
                     self.analytics.capture(.authSignedOut)
                     self.analytics.reset()
                     self.lastIdentifiedUserId = nil
+                    Task { await PurchaseManager.shared.logOut() }
                 }
             }
             .store(in: &cancellables)
